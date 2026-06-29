@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeDiary Pro - Enterprise Ledger & Analytics Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            750: '#262f41',
+                            850: '#1b1f2d',
+                            900: '#131722',
+                            950: '#0c0f16'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 font-sans antialiased transition-colors duration-200">
+
+    <nav class="bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg text-white font-bold tracking-wider text-sm shadow-md">TD</div>
+                <h1 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Trade<span class="text-blue-500">Diary</span> Pro</h1>
+            </div>
+            
+            <button onclick="toggleThemeModeEngine()" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition border border-gray-300 dark:border-gray-700 flex items-center justify-center text-gray-700 dark:text-yellow-400" title="Toggle Theme">
+                <svg id="theme-sun-icon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <svg id="theme-moon-icon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+        </div>
+        
+        <div class="flex bg-gray-200 dark:bg-gray-900 p-1 rounded-lg border border-gray-300 dark:border-gray-800 flex-wrap">
+            <button onclick="switchTab('dashboard-view')" id="btn-dashboard-view" class="px-4 py-1.5 rounded-md text-sm font-medium transition bg-blue-600 text-white">Dashboard</button>
+            <button onclick="switchTab('calendar-view')" id="btn-calendar-view" class="px-4 py-1.5 rounded-md text-sm font-medium transition text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Calendar</button>
+            <button onclick="switchTab('portfolio-view')" id="btn-portfolio-view" class="px-4 py-1.5 rounded-md text-sm font-medium transition text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Portfolio</button>
+            <button onclick="switchTab('pnl-view')" id="btn-pnl-view" class="px-4 py-1.5 rounded-md text-sm font-medium transition text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">P&L Report</button>
+            <button onclick="switchTab('analytics-hub-view')" id="btn-analytics-hub-view" class="px-4 py-1.5 rounded-md text-sm font-medium transition text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Analytics Hub</button>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Save Data
+            </button>
+            <button onclick="toggleModal('tradeModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg flex items-center gap-2">
+                <span>+</span> New Trade
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 lg:p-8 space-y-8">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-800/60 rounded-2xl p-6 shadow-sm relative flex flex-col justify-between min-h-[145px]">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Highest P&L</p>
+                        <p id="totalPl" class="text-2xl font-black mt-2 text-emerald-500 dark:text-emerald-400">₹25,225.00</p>
+                    </div>
+                    <div class="bg-emerald-500/10 p-2.5 rounded-xl text-emerald-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs font-semibold text-rose-500">-57.9% <span class="text-gray-400 dark:text-gray-500 font-normal">vs last month</span></p>
+                    <div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div class="bg-gray-300 dark:bg-gray-700 h-full w-1/3 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-800/60 rounded-2xl p-6 shadow-sm relative flex flex-col justify-between min-h-[145px]">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Win Rate</p>
+                        <p id="winRate" class="text-2xl font-black mt-2 text-blue-500 dark:text-blue-400">70%</p>
+                    </div>
+                    <div class="bg-blue-500/10 p-2.5 rounded-xl text-blue-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 14zm0 0l-6.16-3.422a12.083 12.083 0 00-.665 6.479A11.952 11.952 0 0112 14zm-4 6v-7.5l4-2.222 4 2.222V20"></path></svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs font-semibold text-emerald-500">+5.7% <span class="text-gray-400 dark:text-gray-500 font-normal">vs last month</span></p>
+                    <div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div class="bg-blue-500 h-full w-[70%] rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-800/60 rounded-2xl p-6 shadow-sm relative flex flex-col justify-between min-h-[145px]">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Avg. Risk/Reward</p>
+                        <p id="profitFactorGlobal" class="text-2xl font-black mt-2 text-purple-500 dark:text-purple-400">1:2.67</p>
+                    </div>
+                    <div class="bg-purple-500/10 p-2.5 rounded-xl text-purple-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs font-semibold text-emerald-500">+0.45% <span class="text-gray-400 dark:text-gray-500 font-normal">vs last month</span></p>
+                    <div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div class="bg-gray-300 dark:bg-gray-700 h-full w-1/4 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-800/60 rounded-2xl p-6 shadow-sm relative flex flex-col justify-between min-h-[145px]">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Trades This Month</p>
+                        <p id="allocatedCapital" class="text-2xl font-black mt-2 text-orange-500 dark:text-orange-400">10</p>
+                    </div>
+                    <div class="bg-orange-500/10 p-2.5 rounded-xl text-orange-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs font-semibold text-rose-500">-4 <span class="text-gray-400 dark:text-gray-500 font-normal">vs last month</span></p>
+                    <div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div class="bg-gray-300 dark:bg-gray-700 h-full w-1/5 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard-view" class="tab-content space-y-8">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 flex flex-col justify-between min-h-[360px] shadow-sm">
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white tracking-wide">Win/Loss Distribution</h3>
+                    <div class="relative h-56 flex items-center justify-center my-2">
+                        <canvas id="winLossDistributionChart"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                            <span id="centerWinRateDisplay" class="text-2xl font-black text-gray-900 dark:text-white">0.00%</span>
+                            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">Win Rate</span>
+                            <span class="text-[10px] text-emerald-500 dark:text-emerald-400 font-bold tracking-widest mt-0.5 uppercase">• LIVE</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-center items-center gap-8 border-t border-gray-200 dark:border-gray-800 pt-4 font-sans">
+                        <div class="text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                <span id="winningTradesText" class="text-lg font-black text-gray-900 dark:text-white">0</span>
+                            </div>
+                            <span class="text-xs font-medium text-gray-400 dark:text-gray-500">Winning Trades</span>
+                        </div>
+                        <div class="border-l border-gray-200 dark:border-gray-800 h-8"></div>
+                        <div class="text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                                <span id="losingTradesText" class="text-lg font-black text-gray-900 dark:text-white">0</span>
+                            </div>
+                            <span class="text-xs font-medium text-gray-400 dark:text-gray-500">Losing Trades</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 flex flex-col justify-between min-h-[360px] shadow-sm">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white tracking-wide">Strategy vs P&L</h3>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5">Performance outcome weighted across custom parameters</p>
+                    </div>
+                    <div class="h-64 mt-4">
+                        <canvas id="strategyPnlDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Equity Curve (Historical Progression)</h3>
+                    <div class="h-64"><canvas id="equityChart"></canvas></div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Win / Loss Growth Streak Chart</h3>
+                    <div class="h-64"><canvas id="growthChart"></canvas></div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mistake Distribution</h3>
+                        <div class="flex bg-gray-200 dark:bg-gray-950 p-0.5 rounded-lg text-[11px] font-medium border border-gray-300 dark:border-gray-800">
+                            <button class="px-2.5 py-1 rounded-md bg-blue-600 text-white shadow-sm">This Month</button>
+                            <button class="px-2.5 py-1 rounded-md text-gray-500 dark:text-gray-400 ml-0.5 hover:text-gray-900 dark:hover:text-white">All Time</button>
+                        </div>
+                    </div>
+                    <div class="h-64"><canvas id="mistakeChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800"><h3 class="text-lg font-semibold text-gray-900 dark:text-white">Historical Transaction Logs</h3></div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">
+                                <th class="px-6 py-3">Asset</th>
+                                <th class="px-6 py-3">Direction</th>
+                                <th class="px-6 py-3">Env / Strategy</th>
+                                <th class="px-6 py-3">Risk Matrix (SL / TP)</th>
+                                <th class="px-6 py-3">Setup Attachment</th>
+                                <th class="px-6 py-3">Confidence & Satisfaction</th>
+                                <th class="px-6 py-3">Calculated P&L</th>
+                                <th class="px-6 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeTableBody" class="divide-y divide-gray-200 dark:divide-gray-800 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="calendar-view" class="tab-content hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-gray-50 dark:bg-gray-900 p-4 border border-gray-200 dark:border-gray-800 rounded-xl">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-wide">Trading Performance Matrix Calendar</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Dynamic daily strategy outcome log</p>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap font-sans">
+                    <select id="calMarketFilter" onchange="renderCalendarEngine()" class="bg-white dark:bg-gray-955 border border-gray-300 dark:border-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer">
+                        <option value="ALL">All Environments</option>
+                        <option value="Indian">Indian Market</option>
+                        <option value="Crypto">Crypto Asset Space</option>
+                        <option value="Forex">Forex FX FX Currency</option>
+                        <option value="US Equity">US Equity Ledger</option>
+                    </select>
+                    <select id="calMonthFilter" onchange="renderCalendarEngine()" class="bg-white dark:bg-gray-955 border border-gray-300 dark:border-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer"></select>
+                    <select id="calYearFilter" onchange="renderCalendarEngine()" class="bg-white dark:bg-gray-955 border border-gray-300 dark:border-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer"></select>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 lg:p-6 shadow-sm space-y-4">
+                <div class="grid grid-cols-7 text-center font-semibold text-sm tracking-wide text-gray-600 dark:text-gray-400 pb-2 border-b border-gray-200 dark:border-gray-800">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div id="calendarGridBody" class="grid grid-cols-7 gap-3 font-sans"></div>
+            </div>
+        </div>
+
+        <div id="portfolio-view" class="tab-content hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800"><h3 class="text-lg font-semibold text-gray-900 dark:text-white">Aggregated Live Assets Balance</h3></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">
+                                    <th class="px-6 py-3">Asset Symbol</th>
+                                    <th class="px-6 py-3">Current Net Position</th>
+                                    <th class="px-6 py-3">Average Cost Basis</th>
+                                    <th class="px-6 py-3">Total Invested Cost Value</th>
+                                    <th class="px-6 py-3">Exposure Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolioTableBody" class="divide-y divide-gray-200 dark:divide-gray-800 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Asset Allocation Weight</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Capital concentration distribution map</p>
+                    </div>
+                    <div class="h-64 relative flex items-center justify-center"><canvas id="allocationChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pnl-view" class="tab-content hidden space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                    <h4 class="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Profit Breakdown</h4>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Gross Wins:</span> <span id="grossWins" class="text-green-600 dark:text-green-400 font-bold">$0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Avg Winning Trade:</span> <span id="avgWin" class="text-green-600 dark:text-green-400 font-medium">$0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Max Consecutive Wins:</span> <span id="maxWinStreak" class="text-gray-900 dark:text-white font-medium">0</span></div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                    <h4 class="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Loss Breakdown</h4>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Gross Losses:</span> <span id="grossLosses" class="text-red-600 dark:text-red-400 font-bold">$0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Avg Losing Trade:</span> <span id="avgLoss" class="text-red-600 dark:text-red-400 font-medium">$0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Max Consecutive Losses:</span> <span id="maxLossStreak" class="text-gray-900 dark:text-white font-medium">0</span></div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                    <h4 class="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Efficiency Analysis</h4>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Total Trade count:</span> <span id="reportTotalTrades" class="text-gray-900 dark:text-white font-medium">0</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Win / Loss Ratio:</span> <span id="winLossRatio" class="text-blue-600 dark:text-blue-400 font-medium">0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Expectancy Factor:</span> <span id="expectancy" class="text-yellow-600 dark:text-yellow-500 font-bold">$0.00</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Performance Distributions Breakdown</h3>
+                    <div class="h-64"><canvas id="pnlBarChart"></canvas></div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex flex-col justify-between">
+                    <div><h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Time Distribution Log</h3></div>
+                    <div class="space-y-4 max-h-64 overflow-y-auto pr-2" id="timeDistributionContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="analytics-hub-view" class="tab-content hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="lg:col-span-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 space-y-4">
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 pb-2">Journal Filters</h3>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Filter by Strategy Tag</label>
+                        <select id="analyticsStrategyFilter" onchange="updateDashboardAnalytics()" class="w-full bg-white dark:bg-gray-955 border border-gray-300 dark:border-gray-800 rounded-lg p-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-blue-500">
+                            <option value="ALL">All Strategies</option>
+                        </select>
+                    </div>
+                    
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 pt-2 pb-2">Mathematical Ratios</h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="flex justify-between bg-white dark:bg-gray-955 p-2 rounded border border-gray-200 dark:border-gray-800">
+                            <span class="text-gray-500 dark:text-gray-400">Sharpe Ratio Estimate:</span>
+                            <span id="analyticsSharpe" class="font-bold text-blue-600 dark:text-blue-400">0.00</span>
+                        </div>
+                        <div class="flex justify-between bg-white dark:bg-gray-955 p-2 rounded border border-gray-200 dark:border-gray-800">
+                            <span class="text-gray-500 dark:text-gray-400">Profit Kelly % Factor:</span>
+                            <span id="analyticsKelly" class="font-bold text-purple-600 dark:text-purple-400">0.00%</span>
+                        </div>
+                        <div class="flex justify-between bg-white dark:bg-gray-955 p-2 rounded border border-gray-200 dark:border-gray-800">
+                            <span class="text-gray-500 dark:text-gray-400">Max System Drawdown:</span>
+                            <span id="analyticsDrawdown" class="font-bold text-red-600 dark:text-red-400">$0.00</span>
+                        </div>
+                        <div class="flex justify-between bg-white dark:bg-gray-955 p-2 rounded border border-gray-200 dark:border-gray-800">
+                            <span class="text-gray-500 dark:text-gray-400">Avg Risk Reward Ratio:</span>
+                            <span id="analyticsRRR" class="font-bold text-green-600 dark:text-green-400">1:0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Strategy Alpha Analysis</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Tracking performance returns distribution mapping grouped by asset setup parameters</p>
+                    </div>
+                    <div class="h-64"><canvas id="analyticsStrategyChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">Day-of-Week Performance Profile</h4>
+                    <div class="space-y-2 max-h-60 overflow-y-auto text-xs" id="analyticsWeekdayContainer"></div>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">System Holding Matrix & Sizing</h4>
+                    <div class="space-y-3 text-xs">
+                        <div class="flex justify-between items-center bg-white dark:bg-gray-955 p-2.5 rounded border border-gray-200 dark:border-gray-800">
+                            <span class="text-gray-500 dark:text-gray-400">Largest Single Profit Target:</span>
+                            <span id="analyticsMaxWin" class="font-bold text-green-600 dark:text-green-400">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white dark:bg-gray-955 p-2.5 rounded border border-gray-200 dark:border-gray-800">
+                            <span class="text-gray-500 dark:text-gray-400">Largest Single Loss Event:</span>
+                            <span id="analyticsMaxLoss" class="font-bold text-red-600 dark:text-red-400">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white dark:bg-gray-955 p-2.5 rounded border border-gray-200 dark:border-gray-800">
+                            <span class="text-gray-500 dark:text-gray-400">Average Position Capital Size:</span>
+                            <span id="analyticsAvgSize" class="font-bold text-purple-600 dark:text-purple-400">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white dark:bg-gray-955 p-2.5 rounded border border-gray-200 dark:border-gray-800">
+                            <span class="text-gray-500 dark:text-gray-400">Total Transacted Trade Volume:</span>
+                            <span id="analyticsTotalVolume" class="text-gray-900 dark:text-white font-bold">0.00 Units</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">Strategy Distribution Matrix</h4>
+                    <div class="space-y-2 overflow-y-auto max-h-60 text-xs" id="analyticsStrategyBreakdownContainer"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="tradeModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-[#1e222d] text-[#d1d4dc] rounded-xl w-full max-w-4xl shadow-2xl scale-100 border border-[#2a2e39] overflow-hidden my-8">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-[#2a2e39]">
+                <h3 class="text-xl font-bold text-white tracking-wide">Add New Trade</h3>
+                <button onclick="toggleModal('tradeModal')" class="text-gray-400 hover:text-white transition text-2xl font-light">&times;</button>
+            </div>
+            
+            <div class="flex px-6 pt-3 space-x-6 border-b border-[#2a2e39] text-sm">
+                <button type="button" onclick="switchModalSubTab('modal-general-segment')" id="modal-tab-general" class="pb-3 border-b-2 border-blue-500 text-white font-medium flex items-center gap-2">
+                    <span class="text-xs font-bold bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">ⓘ</span> General
+                </button>
+                <button type="button" onclick="switchModalSubTab('modal-psychology-segment')" id="modal-tab-psychology" class="pb-3 border-b-2 border-transparent hover:text-white text-gray-400 transition flex items-center gap-2">
+                    <span class="text-xs font-bold bg-gray-500/20 text-gray-400 px-1.5 py-0.5 rounded">🧠</span> Psychology
+                </button>
+            </div>
+
+            <form id="tradeForm" class="p-6 space-y-6 text-sm">
+                <div id="modal-general-segment" class="modal-sub-content space-y-5">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="block text-xs font-medium text-gray-400">Trade Duration</span>
+                            <span class="text-[11px] text-gray-500">Select whether this is an intraday or swing trade</span>
+                        </div>
+                        <div class="flex bg-[#2a2e39] p-1 rounded-lg border border-[#363a45]">
+                            <input type="radio" name="tradeDuration" id="dur-intraday" value="INTRADAY" checked class="hidden peer/intra">
+                            <label for="dur-intraday" class="px-4 py-1.5 rounded-md text-xs font-medium tracking-wide cursor-pointer transition select-none bg-blue-600 text-white peer-checked/intra:bg-blue-600 peer-checked/intra:text-white">⏱ Intraday</label>
+                            
+                            <input type="radio" name="tradeDuration" id="dur-swing" value="SWING" class="hidden peer/swing">
+                            <label for="dur-swing" class="px-4 py-1.5 rounded-md text-xs font-medium tracking-wide cursor-pointer transition select-none text-gray-400 hover:text-white ml-1">📅 Swing</label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Market type <span class="text-red-500">*</span></label>
+                            <select id="marketCondition" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500">
+                                <option value="Indian">Indian Market</option>
+                                <option value="Crypto">Crypto Space</option>
+                                <option value="Forex">Forex</option>
+                                <option value="US Equity">US Equity</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Asset Symbol <span class="text-red-500">*</span></label>
+                            <input type="text" id="assetSymbol" required placeholder="e.g., RELIANCE, BTC, EURUSD" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Trade Date <span class="text-red-500">*</span></label>
+                            <input type="date" id="tradeDate" required class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Direction <span class="text-red-500">*</span></label>
+                            <select id="tradeDirection" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500">
+                                <option value="LONG">LONG (Buy)</option>
+                                <option value="SHORT">SHORT (Sell)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Execution Price <span class="text-red-500">*</span></label>
+                            <input type="number" step="any" id="entryPrice" required placeholder="0.00" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Quantity <span class="text-red-500">*</span></label>
+                            <input type="number" step="any" id="tradeQuantity" required placeholder="0" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Exit Price <span class="text-red-500">*</span></label>
+                            <input type="number" step="any" id="exitPrice" required placeholder="0.00" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Stop Loss Price</label>
+                            <input type="number" step="any" id="stopLoss" placeholder="0.00" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Take Profit Target</label>
+                            <input type="number" step="any" id="takeProfit" placeholder="0.00" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Setup Snapshot Image Attachment</label>
+                            <input type="file" id="chartAttachment" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 file:cursor-pointer mt-1">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-2">Strategy Trigger Tags</label>
+                        <div class="flex flex-wrap gap-2" id="modalStrategyContainer">
+                            <button type="button" onclick="selectModalStrategyTag('Breakout')" class="strategy-tag-btn px-3 py-1.5 rounded-lg border border-[#363a45] bg-[#2a2e39] text-gray-300 hover:border-blue-500 transition text-xs">Breakout Pattern</button>
+                            <button type="button" onclick="selectModalStrategyTag('MeanReversion')" class="strategy-tag-btn px-3 py-1.5 rounded-lg border border-[#363a45] bg-[#2a2e39] text-gray-300 hover:border-blue-500 transition text-xs">Mean Reversion</button>
+                            <button type="button" onclick="selectModalStrategyTag('Momentum')" class="strategy-tag-btn px-3 py-1.5 rounded-lg border border-[#363a45] bg-[#2a2e39] text-gray-300 hover:border-blue-500 transition text-xs">Momentum Flow</button>
+                            <button type="button" onclick="selectModalStrategyTag('OrderBlock')" class="strategy-tag-btn px-3 py-1.5 rounded-lg border border-[#363a45] bg-[#2a2e39] text-gray-300 hover:border-blue-500 transition text-xs">Order Block / Institutional SMC</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="modal-psychology-segment" class="modal-sub-content hidden space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Execution Confidence</label>
+                            <select id="confidenceRating" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500">
+                                <option value="5">⭐⭐⭐⭐⭐ High System conviction</option>
+                                <option value="4">⭐⭐⭐⭐ Medium Setup conviction</option>
+                                <option value="3" selected>⭐⭐⭐ Baseline Standard conviction</option>
+                                <option value="2">⭐⭐ Low FOMO risk entry</option>
+                                <option value="1">⭐ Pure Speculation / Blind Gamble</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Rule Adherence Satisfaction</label>
+                            <select id="satisfactionRating" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500">
+                                <option value="5">⭐⭐⭐⭐⭐ Flawless plan tracking</option>
+                                <option value="4">⭐⭐⭐⭐ Minor execution delays</option>
+                                <option value="3" selected>⭐⭐⭐ Average execution discipline</option>
+                                <option value="2">⭐⭐ Forced entry deviations</option>
+                                <option value="1">⭐ Complete rule violation event</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Dominant Emotional Frame</label>
+                            <select id="emotionalState" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500">
+                                <option value="Calm">Calm / Completely Objective</option>
+                                <option value="Anxious">Anxious / Hypervigilant</option>
+                                <option value="Greedy">Greedy / Sizing Impulse</option>
+                                <option value="Revenge">Revenge Tracking Bias</option>
+                                <option value="Bored">Bored / Overtrading Tendency</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-2">Behavioral Execution Mistakes Made</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#171a22] p-4 rounded-xl border border-[#2a2e39]">
+                            <label class="flex items-center space-x-2 text-xs text-gray-300 cursor-pointer select-none">
+                                <input type="checkbox" name="mistakesMade" value="FOMO" class="rounded border-[#363a45] bg-[#1e222d] text-blue-600 focus:ring-0">
+                                <span>FOMO / Chased volatile expansion lines</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-gray-300 cursor-pointer select-none">
+                                <input type="checkbox" name="mistakesMade" value="Over-leveraging" class="rounded border-[#363a45] bg-[#1e222d] text-blue-600 focus:ring-0">
+                                <span>Over-leveraging / Exceeded standard portfolio risk units</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-gray-300 cursor-pointer select-none">
+                                <input type="checkbox" name="mistakesMade" value="Early Exit" class="rounded border-[#363a45] bg-[#1e222d] text-blue-600 focus:ring-0">
+                                <span>Early Exit / Closed before mathematical target zones</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-gray-300 cursor-pointer select-none">
+                                <input type="checkbox" name="mistakesMade" value="Wide SL" class="rounded border-[#363a45] bg-[#1e222d] text-blue-600 focus:ring-0">
+                                <span>Wide Stop Loss / Ignored protective structural matrix boundaries</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1.5">Qualitative Lessons & Review Notes</label>
+                        <textarea id="lessonsLearned" placeholder="Record technical context, market structure remarks, or psychological performance insights..." rows="3" class="w-full bg-[#1e222d] border border-[#363a45] rounded-lg p-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 text-xs resize-none"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-[#2a2e39]">
+                    <button type="button" onclick="toggleModal('tradeModal')" class="bg-transparent hover:bg-white/5 border border-[#363a45] text-gray-400 hover:text-white px-5 py-2 rounded-lg font-semibold transition text-xs">Cancel</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-lg text-xs">Commit Trade Ledger</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="imageZoomModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center z-[100] p-4 select-none">
+        <div class="absolute top-0 inset-x-0 bg-black/40 backdrop-blur-sm px-6 py-4 flex justify-between items-center z-50 border-b border-white/10">
+            <h4 class="text-white font-medium text-sm tracking-wide flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path></svg>
+                Advanced Interactive Setup Viewer
+            </h4>
+            <div class="flex items-center bg-gray-900/80 border border-white/10 rounded-xl p-1 gap-1">
+                <button onclick="applyZoomEngine(1.2)" class="text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-lg transition" title="Zoom In">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                </button>
+                <button onclick="applyZoomEngine(0.8)" class="text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-lg transition" title="Zoom Out">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"></path></svg>
+                </button>
+                <button onclick="resetZoomEngine()" class="text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1 text-xs font-semibold rounded-lg transition" title="Reset Zoom">
+                    Reset
+                </button>
+                <div class="h-4 w-px bg-white/10 mx-1"></div>
+                <a id="downloadZoomImageBtn" download="trade_setup_attachment.png" class="text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-lg transition flex items-center justify-center cursor-pointer" title="Download Image Source">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </a>
+            </div>
+            <button onclick="closeZoomImageModal()" class="text-gray-400 hover:text-white transition text-3xl font-light leading-none" title="Exit Lightbox">&times;</button>
+        </div>
+
+        <div id="zoomCanvasContainer" class="w-full h-full flex items-center justify-center overflow-hidden relative cursor-grab active:cursor-grabbing">
+            <img id="modalZoomTargetImage" src="" alt="Setup Attachment Expanded Preview" class="max-w-full max-h-[80vh] object-contain transition-transform duration-200 ease-out pointer-events-none shadow-2xl rounded-lg">
+        </div>
+    </div>
+
+    <script>
+        // Core Reactive Storage Arrays Memory Base
+        let trades = JSON.parse(localStorage.getItem('trade_diary_data')) || [];
+        let selectedStrategy = "";
+        let chartsInstanceReferences = {};
+
+        // TAB SWITCH ENGINE CONTROL
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+                btn.className = "px-4 py-1.5 rounded-md text-sm font-medium transition text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white";
+            });
+            document.getElementById('btn-' + tabId).className = "px-4 py-1.5 rounded-md text-sm font-medium transition bg-blue-600 text-white";
+        }
+
+        // APP MODAL CONTROLS
+        function toggleModal(modalId) {
+            const el = document.getElementById(modalId);
+            el.classList.toggle('hidden');
+        }
+
+        function switchModalSubTab(segmentId) {
+            document.querySelectorAll('.modal-sub-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(segmentId).classList.remove('hidden');
+
+            document.getElementById('modal-tab-general').className = "pb-3 border-b-2 " + (segmentId === 'modal-general-segment' ? 'border-blue-500 text-white' : 'border-transparent text-gray-400') + " font-medium flex items-center gap-2";
+            document.getElementById('modal-tab-psychology').className = "pb-3 border-b-2 " + (segmentId === 'modal-psychology-segment' ? 'border-blue-500 text-white' : 'border-transparent text-gray-400') + " font-medium flex items-center gap-2";
+        }
+
+        function selectModalStrategyTag(tag) {
+            selectedStrategy = tag;
+            document.querySelectorAll('.strategy-tag-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-white', 'bg-blue-600/20');
+                if(btn.innerText.includes(tag) || (tag === 'OrderBlock' && btn.innerText.includes('Order Block'))) {
+                    btn.classList.add('border-blue-500', 'text-white', 'bg-blue-600/20');
+                }
+            });
+        }
+
+        function resetModalForm() {
+            document.getElementById('tradeForm').reset();
+            selectedStrategy = "";
+            document.querySelectorAll('.strategy-tag-btn').forEach(btn => btn.classList.remove('border-blue-500', 'text-white', 'bg-blue-600/20'));
+            switchModalSubTab('modal-general-segment');
+        }
+
+        // INTERACTIVE ZOOM & PAN SYSTEM ENGINE
+        let currentZoomScale = 1;
+        let isPanningActive = false;
+        let panStartX = 0, panStartY = 0;
+        let panOffsetX = 0, panOffsetY = 0;
+
+        function openZoomImageModal(base64ImageSrc) {
+            if (!base64ImageSrc) return;
+            const targetImg = document.getElementById('modalZoomTargetImage');
+            const downloadBtn = document.getElementById('downloadZoomImageBtn');
+            
+            targetImg.src = base64ImageSrc;
+            downloadBtn.href = base64ImageSrc;
+            
+            // Reset transforms metrics
+            resetZoomEngine();
+            
+            document.getElementById('imageZoomModal').classList.remove('hidden');
+            initPanEventListeners();
+        }
+
+        function closeZoomImageModal() {
+            document.getElementById('imageZoomModal').classList.add('hidden');
+            removePanEventListeners();
+        }
+
+        function applyZoomEngine(amount) {
+            currentZoomScale *= amount;
+            // Bound boundaries between 0.4x and 10x magnification scale 
+            if (currentZoomScale < 0.4) currentZoomScale = 0.4;
+            if (currentZoomScale > 10) currentZoomScale = 10;
+            updateZoomTransformMatrix();
+        }
+
+        function resetZoomEngine() {
+            currentZoomScale = 1;
+            panOffsetX = 0;
+            panOffsetY = 0;
+            updateZoomTransformMatrix();
+        }
+
+        function updateZoomTransformMatrix() {
+            const targetImg = document.getElementById('modalZoomTargetImage');
+            targetImg.style.transform = `translate(${panOffsetX}px, ${panOffsetY}px) scale(${currentZoomScale})`;
+        }
+
+        // Pointer Tracking Mouse Drag-to-Pan Matrix Controls
+        function initPanEventListeners() {
+            const container = document.getElementById('zoomCanvasContainer');
+            container.addEventListener('mousedown', handlePanStart);
+            window.addEventListener('mousemove', handlePanMove);
+            window.addEventListener('mouseup', handlePanEnd);
+            container.addEventListener('wheel', handleScrollWheelZoom, { passive: false });
+        }
+
+        function removePanEventListeners() {
+            const container = document.getElementById('zoomCanvasContainer');
+            container.removeEventListener('mousedown', handlePanStart);
+            window.removeEventListener('mousemove', handlePanMove);
+            window.removeEventListener('mouseup', handlePanEnd);
+            container.removeEventListener('wheel', handleScrollWheelZoom);
+        }
+
+        function handlePanStart(e) {
+            e.preventDefault();
+            isPanningActive = true;
+            panStartX = e.clientX - panOffsetX;
+            panStartY = e.clientY - panOffsetY;
+        }
+
+        function handlePanMove(e) {
+            if (!isPanningActive) return;
+            panOffsetX = e.clientX - panStartX;
+            panOffsetY = e.clientY - panStartY;
+            updateZoomTransformMatrix();
+        }
+
+        function handlePanEnd() {
+            isPanningActive = false;
+        }
+
+        function handleScrollWheelZoom(e) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                applyZoomEngine(1.1); // Zoom in on upward wheel rotation
+            } else {
+                applyZoomEngine(0.9); // Zoom out on downward wheel rotation
+            }
+        }
+
+        // RE-DASHBOARD TELEMETRY ANALYTICS COMPILER
+        function updateDashboardAnalytics() {
+            // Render basic table elements logs
+            const tbody = document.getElementById('tradeTableBody');
+            tbody.innerHTML = "";
+
+            trades.forEach((trade, index) => {
+                const pl = (parseFloat(trade.exitPrice) - parseFloat(trade.entryPrice)) * parseFloat(trade.quantity) * (trade.direction === 'LONG' ? 1 : -1);
+                const plClass = pl >= 0 ? "text-emerald-500 font-bold" : "text-rose-500 font-bold";
+                
+                // Attach image link conditional template logic
+                const attachmentCell = trade.chartImage 
+                    ? `<button onclick="openZoomImageModal('${trade.chartImage}')" class="text-blue-500 hover:text-blue-600 hover:underline flex items-center gap-1.5 transition">
+                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                         View Setup (Zoom Enabled)
+                       </button>` 
+                    : `<span class="text-gray-400 dark:text-gray-600 italic text-xs">No chart attached</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 dark:hover:bg-gray-850 transition text-gray-700 dark:text-gray-300";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">${trade.assetSymbol} <span class="block text-[11px] text-gray-400 font-normal mt-0.5">${trade.date}</span></td>
+                    <td class="px-6 py-4"><span class="px-2 py-0.5 text-xs font-bold rounded ${trade.direction === 'LONG' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">${trade.direction}</span></td>
+                    <td class="px-6 py-4 text-xs font-medium">${trade.marketCondition} <span class="block text-[10px] text-blue-400 mt-0.5 font-semibold tracking-wide uppercase">${trade.strategyTag || 'Unspecified'}</span></td>
+                    <td class="px-6 py-4 text-xs tracking-wide">SL: ${trade.stopLoss || '-'} <span class="block text-gray-400 mt-0.5">TP: ${trade.takeProfit || '-'}</span></td>
+                    <td class="px-6 py-4">${attachmentCell}</td>
+                    <td class="px-6 py-4 text-xs">Conf: ${trade.confidenceRating}/5 <span class="block mt-0.5 text-gray-400">Sat: ${trade.satisfactionRating}/5</span></td>
+                    <td class="px-6 py-4 ${plClass}">₹${pl.toFixed(2)}</td>
+                    <td class="px-6 py-4 text-right"><button onclick="removeTrade(${index})" class="text-rose-500 hover:text-rose-600 font-semibold transition text-xs">Delete</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Re-render empty placeholder graphics fallback charts if necessary
+            renderTelemetryMockCharts();
+        }
+
+        function renderTelemetryMockCharts() {
+            // Re-initialize standard analytics graphs charts references components
+            const ctx1 = document.getElementById('winLossDistributionChart').getContext('2d');
+            if (chartsInstanceReferences.winLoss) chartsInstanceReferences.winLoss.destroy();
+            
+            const winCount = trades.filter(t => (parseFloat(t.exitPrice) - parseFloat(t.entryPrice)) * (t.direction === 'LONG' ? 1 : -1) >= 0).length;
+            const lossCount = trades.length - winCount;
+            const winRatePct = trades.length ? ((winCount / trades.length) * 100).toFixed(2) : "0.00";
+
+            document.getElementById('centerWinRateDisplay').innerText = `${winRatePct}%`;
+            document.getElementById('winningTradesText').innerText = winCount;
+            document.getElementById('losingTradesText').innerText = lossCount;
+
+            chartsInstanceReferences.winLoss = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [winCount || 1, lossCount || 0],
+                        backgroundColor: ['#10b981', '#f43f5e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { cutout: '82%', plugins: { legend: { display: false } } }
+            });
+        }
+
+        // SUBMISSION FORM EVENT ROUTER
+        document.getElementById('tradeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('chartAttachment');
+            const file = fileInput.files[0];
+
+            const baseSubmit = (imgBase64) => {
+                const newTrade = {
+                    marketCondition: document.getElementById('marketCondition').value,
+                    assetSymbol: document.getElementById('assetSymbol').value.toUpperCase().trim(),
+                    tradeDirection: document.getElementById('tradeDirection').value, // backward compliance
+                    direction: document.getElementById('tradeDirection').value,
+                    entryPrice: document.getElementById('entryPrice').value,
+                    tradeQuantity: document.getElementById('tradeQuantity').value, // backward compliance
+                    quantity: document.getElementById('tradeQuantity').value,
+                    exitPrice: document.getElementById('exitPrice').value,
+                    stopLoss: document.getElementById('stopLoss').value,
+                    takeProfit: document.getElementById('takeProfit').value,
+                    confidenceRating: document.getElementById('confidenceRating').value,
+                    satisfactionRating: document.getElementById('satisfactionRating').value,
+                    emotionalState: document.getElementById('emotionalState').value || "None",
+                    mistakesMade: Array.from(document.querySelectorAll('input[name="mistakesMade"]:checked')).map(el => el.value),
+                    lessonsLearned: document.getElementById('lessonsLearned').value.trim(),
+                    date: document.getElementById('tradeDate').value,
+                    strategyTag: selectedStrategy,
+                    chartImage: imgBase64
+                };
+                trades.push(newTrade);
+                localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+                updateDashboardAnalytics();
+                
+                this.reset();
+                resetModalForm();
+                toggleModal('tradeModal');
+            };
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function() { baseSubmit(reader.result); };
+                reader.readAsDataURL(file);
+            } else {
+                baseSubmit(null);
+            }
+        });
+
+        function removeTrade(index) {
+            if(confirm("Confirm deletion of trade?")) {
+                trades.splice(index, 1);
+                localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+                updateDashboardAnalytics();
+            }
+        }
+
+        function exportToExcel() { alert("Data state locked safely to localized operational browser storage."); }
+        function initializeThemeModeEngine() { console.log("Theme operational mode tracking initialized."); }
+        function toggleThemeModeEngine() { document.documentElement.classList.toggle('dark'); }
+
+        window.onload = function() { 
+            initializeThemeModeEngine();
+            updateDashboardAnalytics(); 
+        };
+    </script>
+</body>
+</html>
