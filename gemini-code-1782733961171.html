@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeDiary Pro - Enterprise Ledger & Analytics Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            750: '#262f41',
+                            850: '#1b1f2d',
+                            900: '#131722',
+                            950: '#0c0f16'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class=\"bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 font-sans antialiased transition-colors duration-200\">
+
+    <nav class="bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-xl font-black tracking-tight text-gray-900 dark:text-white block">TRADEDIARY</span>
+                    <span class="text-[10px] uppercase tracking-widest font-bold text-blue-600 dark:text-blue-400 block -mt-1">PRO ANALYTICS</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <button onclick="toggleModal('tradeModal')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-sm flex items-center space-x-2 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                <span>Log Executive Trade</span>
+            </button>
+            <button onclick="toggleThemeMode()" class="p-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <main class="p-6 max-w-7xl mx-auto space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wider">Net P&L Balance</div>
+                <div id="statNetPnL" class="text-2xl font-black mt-1">$0.00</div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wider">Win Ratio Strategy</div>
+                <div id="statWinRatio" class="text-2xl font-black mt-1">0.0%</div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wider">Executed Positions</div>
+                <div id="statTotalTrades" class="text-2xl font-black mt-1">0</div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wider">Profit Factor Metric</div>
+                <div id="statProfitFactor" class="text-2xl font-black mt-1">0.00</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-xl flex flex-col justify-between">
+                <div>
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white">Performance Ledger Vector</h3>
+                    <p class="text-xs text-gray-500 mb-4">Cumulative account equity projection curve</p>
+                </div>
+                <div class="relative h-64 w-full">
+                    <canvas id="equityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-xl flex flex-col justify-between">
+                <div>
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white">Strategy Allocation</h3>
+                    <p class="text-xs text-gray-500 mb-4">Volume allocation per strategy rule</p>
+                </div>
+                <div class="relative h-64 w-full flex justify-center items-center">
+                    <canvas id="strategyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Historical Core Ledger</h3>
+                <span class="text-xs font-medium text-gray-500 bg-gray-200 dark:bg-gray-800 px-2.5 py-1 rounded-full">Secure Live Mode</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 dark:bg-gray-850 border-b border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            <th class="p-4">Timestamp</th>
+                            <th class="p-4">Asset Matrix</th>
+                            <th class="p-4">Execution Vector</th>
+                            <th class="p-4">Volume Size</th>
+                            <th class="p-4">Entry / Exit</th>
+                            <th class="p-4 text-right">Realized Net P&L</th>
+                            <th class="p-4 text-center">Operational Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledgerTableBody" class="divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="tradeModal" class="fixed inset-0 z-50 overflow-y-auto bg-gray-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-850 rounded-t-2xl">
+                <div>
+                    <h3 id="modalTitle" class="text-xl font-bold text-gray-900 dark:text-white">Log Executive Entry</h3>
+                    <p class="text-xs text-gray-500">Append high fidelity transaction data directly into encrypted analytical cache.</p>
+                </div>
+                <button onclick="toggleModal('tradeModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6 flex-1">
+                <form id="tradeForm" class="space-y-6" onsubmit="return false;">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Execution Asset Matrix</label>
+                            <input type="text" id="asset" required placeholder="e.g. BTCUSDT, EURUSD" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-4 py-2.5 rounded-lg focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Execution Direction</label>
+                            <select id="direction" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-4 py-2.5 rounded-lg focus:outline-none focus:border-blue-500 transition">
+                                <option value="LONG">LONG / BUY</option>
+                                <option value="SHORT">SHORT / SELL</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Execution Timestamp</label>
+                            <input type="date" id="tradeDate" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-4 py-2.5 rounded-lg focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Volume Allocation</label>
+                            <input type="number" step="any" id="volume" required placeholder="0.00" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-4 py-2.5 rounded-lg focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Entry Execution Price</label>
+                            <input type="number" step="any" id="entryPrice" required placeholder="0.00" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-4 py-2.5 rounded-lg focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Exit Execution Price</label>
+                            <input type="number" step="any" id="exitPrice" required placeholder="0.00" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-4 py-2.5 rounded-lg focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Net Realized P&L ($)</label>
+                            <input type="number" step="any" id="pnl" required placeholder="0.00" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-4 py-2.5 rounded-lg focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Algorithmic Strategy Strategy Rule</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="strategyContainer">
+                            <button type="button" onclick="selectStrategyTag(this)" class="strategy-btn px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-left">Breakout Vector</button>
+                            <button type="button" onclick="selectStrategyTag(this)" class="strategy-btn px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-left">Mean Reversion</button>
+                            <button type="button" onclick="selectStrategyTag(this)" class="strategy-btn px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-left">Momentum Scalp</button>
+                            <button type="button" onclick="selectStrategyTag(this)" class="strategy-btn px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-left">Trend Following</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Technical Chart Synthesis</label>
+                            <div class="border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-xl p-4 text-center hover:border-blue-500 transition relative">
+                                <input type="file" id="chartUpload" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                <div class="space-y-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <p class="text-xs font-medium text-gray-600 dark:text-gray-400">Upload execution visualization mapping</p>
+                                    <p class="text-[10px] text-gray-400">PNG, JPG, WEBP formats allowed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1 tracking-wider">Retrospective Lessons Learned</label>
+                            <textarea id="lessonsLearned" rows="3" placeholder="Identify mental state, rules broken, or perfect setup confirmations..." class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition resize-none text-sm"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="p-6 border-t border-gray-200 dark:border-gray-800 flex justify-end space-x-3 bg-gray-50 dark:bg-gray-850 rounded-b-2xl">
+                <button type="button" onclick="toggleModal('tradeModal')" class="px-5 py-2.5 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition">Abort Operational Record</button>
+                <button type="button" id="submitFormButton" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">Commit Ledger Record</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewModal" class="fixed inset-0 z-50 overflow-y-auto bg-gray-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-850">
+                <div>
+                    <h3 id="viewTitle" class="text-xl font-bold text-gray-900 dark:text-white">Transaction Retrospective</h3>
+                    <p class="text-xs text-gray-500">Comprehensive diagnostic readout of the historical ledger node.</p>
+                </div>
+                <button onclick="toggleModal('viewModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="viewModalContent" class="p-6 overflow-y-auto space-y-6 flex-1">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // System wide Reactive Cache state array
+        let trades = JSON.parse(localStorage.getItem('trade_diary_data')) || [];
+        let selectedStrategy = "";
+        let editingTradeIndex = null;
+
+        // Chart Engines
+        let equityChartInstance = null;
+        let strategyChartInstance = null;
+
+        function initializeThemeModeEngine() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        function toggleThemeMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden');
+            if(modalId === 'tradeModal' && modal.classList.contains('hidden')) {
+                resetModalForm();
+            }
+        }
+
+        function selectStrategyTag(element) {
+            document.querySelectorAll('.strategy-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600', 'dark:border-blue-600');
+            });
+            element.classList.add('bg-blue-600', 'text-white', 'border-blue-600', 'dark:border-blue-600');
+            selectedStrategy = element.innerText;
+        }
+
+        function resetModalForm() {
+            document.getElementById('tradeForm').reset();
+            selectedStrategy = "";
+            editingTradeIndex = null;
+            document.getElementById('modalTitle').innerText = "Log Executive Entry";
+            document.querySelectorAll('.strategy-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600', 'dark:border-blue-600');
+            });
+        }
+
+        function updateDashboardAnalytics() {
+            const tableBody = document.getElementById('ledgerTableBody');
+            tableBody.innerHTML = "";
+
+            let totalPnL = 0;
+            let wins = 0;
+            let losses = 0;
+            let totalGrossProfit = 0;
+            let totalGrossLoss = 0;
+
+            // Sort trades linearly by time vectors
+            trades.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            let equityCurveData = [];
+            let currentRunningBalance = 0;
+            let strategyDistributionCache = {};
+
+            trades.forEach((trade, index) => {
+                const pnlVal = parseFloat(trade.pnl);
+                totalPnL += pnlVal;
+                currentRunningBalance += pnlVal;
+                equityCurveData.push(currentRunningBalance);
+
+                if (pnlVal >= 0) {
+                    wins++;
+                    totalGrossProfit += pnlVal;
+                } else {
+                    losses++;
+                    totalGrossLoss += Math.abs(pnlVal);
+                }
+
+                if (trade.strategyTag) {
+                    strategyDistributionCache[trade.strategyTag] = (strategyDistributionCache[trade.strategyTag] || 0) + 1;
+                }
+
+                // Append element row matrix onto UI components
+                const inlineRowElement = document.createElement('tr');
+                inlineRowElement.className = "hover:bg-gray-50/50 dark:hover:bg-gray-850/50 transition border-b border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300";
+                
+                inlineRowElement.innerHTML = `
+                    <td class="p-4 font-medium">${trade.date}</td>
+                    <td class="p-4"><span class="font-bold tracking-tight text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">${trade.asset}</span></td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${trade.direction === 'LONG' ? 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400'}">${trade.direction}</span></td>
+                    <td class="p-4 font-mono">${trade.volume}</td>
+                    <td class="p-4 font-mono text-xs text-gray-500">${trade.entryPrice} &rarr; ${trade.exitPrice}</td>
+                    <td class="p-4 text-right font-black font-mono ${pnlVal >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">${pnlVal >= 0 ? '+' : ''}${pnlVal.toFixed(2)}</td>
+                    <td class="p-4 text-center space-x-2">
+                        <button onclick="inspectTradeRecord(${index})" class="text-blue-600 dark:text-blue-400 hover:underline text-xs font-bold">Inspect</button>
+                        <button onclick="triggerModifySequence(${index})" class="text-amber-600 dark:text-amber-400 hover:underline text-xs font-bold">Modify</button>
+                        <button onclick="removeTrade(${index})" class="text-red-600 dark:text-red-400 hover:underline text-xs font-bold">Purge</button>
+                    </td>
+                `;
+                tableBody.appendChild(inlineRowElement);
+            });
+
+            // Statistical updates
+            document.getElementById('statNetPnL').innerText = (totalPnL >= 0 ? '+' : '') + '$' + totalPnL.toFixed(2);
+            document.getElementById('statNetPnL').className = `text-2xl font-black mt-1 ${totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`;
+            
+            const calculatedRatio = trades.length > 0 ? ((wins / trades.length) * 100).toFixed(1) : "0.0";
+            document.getElementById('statWinRatio').innerText = `${calculatedRatio}%`;
+            document.getElementById('statTotalTrades').innerText = trades.length;
+
+            const profitFactorValue = totalGrossLoss > 0 ? (totalGrossProfit / totalGrossLoss).toFixed(2) : (totalGrossProfit > 0 ? "Max" : "0.00");
+            document.getElementById('statProfitFactor').innerText = profitFactorValue;
+
+            renderVectorAnalyticsCharts(equityCurveData, strategyDistributionCache);
+        }
+
+        function renderVectorAnalyticsCharts(curveArray, strategyDistribution) {
+            const trackingLabels = trades.map((_, i) => `#${i + 1}`);
+            const isDark = document.documentElement.classList.contains('dark');
+            const axisGridColor = isDark ? '#262f41' : '#e5e7eb';
+            const axisTextColor = isDark ? '#9ca3af' : '#4b5563';
+
+            if (equityChartInstance) equityChartInstance.destroy();
+            const ctxEquity = document.getElementById('equityChart').getContext('2d');
+            equityChartInstance = new Chart(ctxEquity, {
+                type: 'line',
+                data: {
+                    labels: trackingLabels.length > 0 ? trackingLabels : ['Origin'],
+                    datasets: [{
+                        label: 'Running Capital Flow ($)',
+                        data: curveArray.length > 0 ? curveArray : [0],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.15,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: axisGridColor }, ticks: { color: axisTextColor } },
+                        y: { grid: { color: axisGridColor }, ticks: { color: axisTextColor } }
+                    }
+                }
+            });
+
+            if (strategyChartInstance) strategyChartInstance.destroy();
+            const ctxStrategy = document.getElementById('strategyChart').getContext('2d');
+            
+            const segmentLabels = Object.keys(strategyDistribution);
+            const segmentData = Object.values(strategyDistribution);
+
+            strategyChartInstance = new Chart(ctxStrategy, {
+                type: 'doughnut',
+                data: {
+                    labels: segmentLabels.length > 0 ? segmentLabels : ['No Rule Sets Matched'],
+                    datasets: [{
+                        data: segmentData.length > 0 ? segmentData : [1],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: axisTextColor, boxWidth: 12, padding: 15 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function inspectTradeRecord(index) {
+            const target = trades[index];
+            const contentContainer = document.getElementById('viewModalContent');
+            
+            document.getElementById('viewTitle').innerText = `${target.asset} Transaction Diagnostic`;
+            
+            contentContainer.innerHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 dark:bg-gray-850 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+                    <div><div class="text-[10px] uppercase text-gray-400 font-bold">Direction Vector</div><div class="font-bold text-sm text-gray-900 dark:text-white">${target.direction}</div></div>
+                    <div><div class="text-[10px] uppercase text-gray-400 font-bold">Volume Allocation</div><div class="font-bold text-sm text-gray-900 dark:text-white">${target.volume}</div></div>
+                    <div><div class="text-[10px] uppercase text-gray-400 font-bold">Strategy Mechanism</div><div class="font-bold text-sm text-gray-900 dark:text-white">${target.strategyTag || 'Unspecified Strategy'}</div></div>
+                    <div><div class="text-[10px] uppercase text-gray-400 font-bold">Net Yield Balance</div><div class="font-black text-sm ${parseFloat(target.pnl) >= 0 ? 'text-green-600' : 'text-red-600'}">$ ${target.pnl}</div></div>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Retrospective Structural Analysis</h4>
+                    <p class="text-sm leading-relaxed bg-gray-50 dark:bg-gray-850 p-4 rounded-xl border border-gray-100 dark:border-gray-800 italic">${target.lessonsLearned || "No operational logging compiled for this performance node."}</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Execution Capture Artifact</h4>
+                    ${target.chartImage ? `<img src="${target.chartImage}" class="w-full h-auto rounded-xl border border-gray-200 dark:border-gray-800 object-contain max-h-96" />` : `<div class="p-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-xl text-center text-xs text-gray-400">No chart schema matrix mapped into ledger engine.</div>`}
+                </div>
+            `;
+            
+            toggleModal('viewModal');
+        }
+
+        function triggerModifySequence(index) {
+            editingTradeIndex = index;
+            const target = trades[index];
+            
+            toggleModal('tradeModal');
+            document.getElementById('modalTitle').innerText = "Modify High Fidelity Matrix";
+
+            document.getElementById('asset').value = target.asset;
+            document.getElementById('direction').value = target.direction;
+            document.getElementById('tradeDate').value = target.date;
+            document.getElementById('volume').value = target.volume;
+            document.getElementById('entryPrice').value = target.entryPrice;
+            document.getElementById('exitPrice').value = target.exitPrice;
+            document.getElementById('pnl').value = target.pnl;
+            document.getElementById('lessonsLearned').value = target.lessonsLearned || "";
+
+            if(target.strategyTag) {
+                const buttons = document.querySelectorAll('.strategy-btn');
+                buttons.forEach(btn => {
+                    if(btn.innerText === target.strategyTag) selectStrategyTag(btn);
+                });
+            }
+        }
+
+        // Operational Execution Pipeline Repair Action Link
+        document.getElementById('submitFormButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Manual verification validation schema pipeline triggers
+            const asset = document.getElementById('asset').value.trim();
+            const date = document.getElementById('tradeDate').value;
+            const volume = document.getElementById('volume').value.trim();
+            const entryPrice = document.getElementById('entryPrice').value.trim();
+            const exitPrice = document.getElementById('exitPrice').value.trim();
+            const pnl = document.getElementById('pnl').value.trim();
+
+            if(!asset || !date || !volume || !entryPrice || !exitPrice || !pnl) {
+                alert("Operational Failure: Missing required fields across core data entries!");
+                return;
+            }
+
+            const fileInput = document.getElementById('chartUpload');
+            const file = fileInput.files[0];
+
+            const executeCommitOperation = (base64Image) => {
+                const existingImage = (editingTradeIndex !== null && trades[editingTradeIndex]) ? trades[editingTradeIndex].chartImage : null;
+                const finalImage = base64Image || existingImage;
+
+                const payloadTrade = {
+                    asset: asset.toUpperCase(),
+                    direction: document.getElementById('direction').value,
+                    volume: volume,
+                    entryPrice: entryPrice,
+                    exitPrice: exitPrice,
+                    pnl: pnl,
+                    lessonsLearned: document.getElementById('lessonsLearned').value.trim(),
+                    date: date,
+                    strategyTag: selectedStrategy,
+                    chartImage: finalImage
+                };
+
+                if (editingTradeIndex !== null) {
+                    trades[editingTradeIndex] = payloadTrade;
+                } else {
+                    trades.push(payloadTrade);
+                }
+
+                localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+                updateDashboardAnalytics();
+                
+                resetModalForm();
+                toggleModal('tradeModal');
+            };
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function() { executeCommitOperation(reader.result); };
+                reader.readAsDataURL(file);
+            } else {
+                executeCommitOperation(null);
+            }
+        });
+
+        function removeTrade(index) {
+            if(confirm("Confirm deletion of trade?")) {
+                trades.splice(index, 1);
+                localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+                updateDashboardAnalytics();
+            }
+        }
+
+        window.onload = function() { 
+            initializeThemeModeEngine();
+            updateDashboardAnalytics(); 
+        };
+    </script>
+</body>
+</html>
