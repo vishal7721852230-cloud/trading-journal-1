@@ -1417,21 +1417,7 @@
             }
         }
 
-        function exportToExcel() {
-            let dataCells = ``;
-            trades.forEach(t => {
-                dataCells += `
-                <Row>
-                    <Cell><Data ss:Type="String">${t.date || 'N/A'}</Data></Cell>
-                    <Cell><Data ss:Type="String">${t.symbol}</Data></Cell>
-                    <Cell><Data ss:Type="String">${t.direction || 'LONG'}</Data></Cell>
-                    <Cell><Data ss:Type="Number">${t.calculatedPl || 0}</Data></Cell>
-                    <Cell><Data ss:Type="Number">${t.entryPrice}</Data></Cell>
-                    <Cell><Data ss:Type="Number">${t.exitPrice}</Data></Cell>
-                    <Cell><Data ss:Type="Number">${t.quantity}</Data></Cell>
-                    <Cell><Data ss:Type="String">${t.strategyTag || 'None'}</Data></Cell>
-                </Row>`;
-            });
+     
 
             const template = `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>
             <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:spreadsheet" xmlns:x="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40">
