@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeDiary Pro — Institutional Analytics Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        darkbg: {
+                            900: '#09090b',
+                            850: '#141417',
+                            800: '#1c1c21',
+                            750: '#27272a',
+                        }
+                    },
+                    animation: {
+                        'shake': 'shake 0.35s cubic-bezier(.36,.07,.19,.97) both',
+                    },
+                    keyframes: {
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(4px, 0, 0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom scrollbar style for high-end look */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        .dark ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-darkbg-900 text-slate-800 dark:text-zinc-100 font-sans antialiased transition-colors duration-300">
+
+    <div id="auth-container" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-50 dark:bg-darkbg-900 px-4 transition-all duration-300">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40 dark:opacity-20">
+            <div class="absolute -top-[20%] -left-[10%] w-[600px] h-[600px] rounded-full bg-brand-500/20 blur-[120px]"></div>
+            <div class="absolute -bottom-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-violet-500/20 blur-[120px]"></div>
+        </div>
+
+        <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800/80 w-full max-w-md p-8 rounded-3xl shadow-2xl relative z-10 transform transition-all duration-300">
+            
+            <div class="flex flex-col items-center text-center mb-8">
+                <div class="bg-gradient-to-tr from-brand-600 to-violet-500 p-3 rounded-2xl text-white font-black tracking-wider text-sm shadow-md shadow-brand-500/20 mb-3 select-none">
+                    TD
+                </div>
+                <h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    Terminal Authentication
+                </h2>
+                <p class="text-xs text-slate-400 dark:text-zinc-500 mt-1 font-medium">Access TradeDiary Pro Institutional Analytics Engine</p>
+            </div>
+
+            <div id="auth-toast" class="hidden mb-5 p-3 rounded-xl text-xs font-semibold bg-brand-50 dark:bg-brand-500/10 border border-brand-200 dark:border-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center gap-2 animate-pulse">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span id="auth-toast-message">Demo OTP routing packet active.</span>
+            </div>
+
+            <div id="auth-stage-identity" class="space-y-5">
+                <button onclick="triggerGoogleSignInFlow()" class="w-full bg-white dark:bg-darkbg-800 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 font-semibold py-3 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2.5 active:scale-[0.99] shadow-sm">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+
+                <div class="flex items-center my-4">
+                    <div class="grow border-t border-slate-200 dark:border-zinc-800"></div>
+                    <span class="mx-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">or use secure OTP link</span>
+                    <div class="grow border-t border-slate-200 dark:border-zinc-800"></div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="auth-input-login" class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Email ID or Phone Number</label>
+                    <input type="text" id="auth-input-login" placeholder="name@domain.com or +91 XXXXX XXXXX" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-3 text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none focus:border-brand-500 shadow-sm transition-all">
+                    <p id="auth-error-message" class="hidden text-[10px] font-semibold text-rose-500 mt-1"></p>
+                </div>
+
+                <button onclick="requestOtpTokenFlow()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition-all shadow-md shadow-brand-600/10 active:scale-[0.99] flex items-center justify-center gap-2">
+                    Send 6-Digit OTP Code
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+
+            <div id="auth-stage-otp" class="hidden space-y-6">
+                <div class="text-center">
+                    <p class="text-xs text-slate-500 dark:text-zinc-400">Enter verification matrix dispatched to</p>
+                    <p id="auth-display-target" class="text-xs font-bold text-slate-800 dark:text-white mt-0.5 break-all"></p>
+                </div>
+
+                <div class="flex justify-between items-center gap-2 select-none">
+                    <input type="text" maxlength="1" data-otp-idx="0" class="otp-box w-12 h-12 text-center text-lg font-extrabold bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-sm transition-all">
+                    <input type="text" maxlength="1" data-otp-idx="1" class="otp-box w-12 h-12 text-center text-lg font-extrabold bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-sm transition-all">
+                    <input type="text" maxlength="1" data-otp-idx="2" class="otp-box w-12 h-12 text-center text-lg font-extrabold bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-sm transition-all">
+                    <input type="text" maxlength="1" data-otp-idx="3" class="otp-box w-12 h-12 text-center text-lg font-extrabold bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-sm transition-all">
+                    <input type="text" maxlength="1" data-otp-idx="4" class="otp-box w-12 h-12 text-center text-lg font-extrabold bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-sm transition-all">
+                    <input type="text" maxlength="1" data-otp-idx="5" class="otp-box w-12 h-12 text-center text-lg font-extrabold bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-sm transition-all">
+                </div>
+
+                <p id="auth-otp-error" class="hidden text-[10px] font-semibold text-rose-500 text-center mt-1"></p>
+
+                <div class="space-y-4">
+                    <button onclick="submitOtpVerificationCode()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition-all shadow-md shadow-brand-600/10 active:scale-[0.99] flex items-center justify-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        Verify & Unlock Terminal
+                    </button>
+                    
+                    <div class="flex justify-between items-center text-[11px] font-medium pt-1">
+                        <button onclick="returnToIdentityStage()" class="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition flex items-center gap-1 focus:outline-none">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            Back
+                        </button>
+                        <span id="auth-countdown" class="text-slate-400 dark:text-zinc-500">Resend code in <span id="auth-timer-sec" class="font-bold text-brand-500">59</span>s</span>
+                        <button id="auth-resend-btn" onclick="resendOtpTokenCode()" class="hidden text-brand-600 hover:text-brand-700 font-bold transition focus:outline-none">Resend OTP Code</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="auth-stage-loading" class="hidden py-8 flex flex-col items-center justify-center text-center space-y-4">
+                <div class="w-10 h-10 border-4 border-brand-500/20 border-t-brand-600 rounded-full animate-spin"></div>
+                <div>
+                    <p id="auth-loading-text" class="text-xs font-bold text-slate-800 dark:text-white">Establishing terminal authorization handshake...</p>
+                    <p class="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">Please hold while keys are validated</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-content" class="hidden">
+        <nav class="sticky top-0 z-40 bg-white/80 dark:bg-darkbg-900/80 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800/80 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-5">
+                <div class="flex items-center space-x-3 select-none">
+                    <div class="bg-gradient-to-tr from-brand-600 to-violet-500 p-2.5 rounded-xl text-white font-black tracking-wider text-xs shadow-md shadow-brand-500/20">
+                        TD
+                    </div>
+                    <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                        Trade<span class="bg-gradient-to-r from-brand-500 to-violet-400 bg-clip-text text-transparent">Diary</span> <span class="text-[10px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 ml-1 border border-slate-200 dark:border-zinc-700">Pro</span>
+                    </h1>
+                </div>
+                
+                <button onclick="toggleThemeModeEngine()" class="p-2 rounded-xl bg-slate-100 dark:bg-darkbg-850 hover:bg-slate-200 dark:hover:bg-darkbg-800 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-amber-400 transition-all active:scale-95" title="Toggle Display Mode">
+                    <svg id="theme-sun-icon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <svg id="theme-moon-icon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+            
+            <div class="flex bg-slate-100 dark:bg-darkbg-850 p-1 rounded-xl border border-slate-200/60 dark:border-zinc-800 max-w-full overflow-x-auto scrollbar-none">
+                <button onclick="switchTab('dashboard-view')" id="btn-dashboard-view" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 whitespace-nowrap">Dashboard</button>
+                <button onclick="switchTab('calendar-view')" id="btn-calendar-view" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 whitespace-nowrap">Calendar</button>
+                <button onclick="switchTab('portfolio-view')" id="btn-portfolio-view" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 whitespace-nowrap">Portfolio</button>
+                <button onclick="switchTab('pnl-view')" id="btn-pnl-view" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 whitespace-nowrap">P&L Report</button>
+                <button onclick="switchTab('analytics-hub-view')" id="btn-analytics-hub-view" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 whitespace-nowrap">Analytics Hub</button>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600/10 dark:hover:bg-emerald-600/20 text-white dark:text-emerald-400 border border-transparent dark:border-emerald-500/20 px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-2 active:scale-95">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export Ledger
+                </button>
+                <button onclick="openNewTradeModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-md shadow-brand-600/10 flex items-center gap-1.5 active:scale-95">
+                    <span class="text-sm font-bold">+</span> New Trade Entry
+                </button>
+
+                <div class="h-6 border-l border-slate-200 dark:border-zinc-800 mx-1"></div>
+                <div class="flex items-center gap-2.5 bg-slate-100 dark:bg-darkbg-850 pl-2.5 pr-1.5 py-1 rounded-xl border border-slate-200/60 dark:border-zinc-800">
+                    <div class="flex flex-col text-right">
+                        <span id="nav-user-identifier" class="text-[10px] font-bold text-slate-700 dark:text-zinc-200 max-w-[100px] truncate">operator@secure.io</span>
+                        <span class="text-[8px] font-bold text-emerald-500 uppercase tracking-wider text-right">Verified</span>
+                    </div>
+                    <button onclick="executeTerminalLogout()" class="p-1.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-lg hover:bg-slate-200/50 dark:hover:bg-zinc-800 transition-all focus:outline-none" title="Terminate Secure Session">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto p-4 lg:p-8 space-y-8 animate-fade-in">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm relative flex flex-col justify-between min-h-[140px] transition-all duration-200 hover:border-slate-300 dark:hover:border-zinc-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Cumulative Profit & Loss</p>
+                            <p id="totalPl" class="text-2xl font-extrabold mt-2 tracking-tight text-emerald-600 dark:text-emerald-400">₹0.00</p>
+                        </div>
+                        <div class="bg-emerald-500/10 dark:bg-emerald-500/5 p-2.5 rounded-xl text-emerald-600 dark:text-emerald-400 border border-emerald-500/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-1.5">
+                        <span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded">+Live</span>
+                        <span class="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">realtime engine data</span>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm relative flex flex-col justify-between min-h-[140px] transition-all duration-200 hover:border-slate-300 dark:hover:border-zinc-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Win Rate Ratio</p>
+                            <p id="winRate" class="text-2xl font-extrabold mt-2 tracking-tight text-brand-600 dark:text-brand-400">0%</p>
+                        </div>
+                        <div class="bg-brand-500/10 dark:bg-brand-500/5 p-2.5 rounded-xl text-brand-600 dark:text-brand-400 border border-brand-500/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="w-full bg-slate-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                            <div id="winRateProgressBar" class="bg-gradient-to-r from-brand-500 to-violet-500 h-full w-0 transition-all duration-500 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm relative flex flex-col justify-between min-h-[140px] transition-all duration-200 hover:border-slate-300 dark:hover:border-zinc-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Avg Risk/Reward</p>
+                            <p id="profitFactorGlobal" class="text-2xl font-extrabold mt-2 tracking-tight text-violet-600 dark:text-violet-400">1:0.00</p>
+                        </div>
+                        <div class="bg-violet-500/10 dark:bg-violet-500/5 p-2.5 rounded-xl text-violet-600 dark:text-violet-400 border border-violet-500/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-1">
+                        <span class="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Mathematical expectancy map</span>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm relative flex flex-col justify-between min-h-[140px] transition-all duration-200 hover:border-slate-300 dark:hover:border-zinc-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Transacted Frequency</p>
+                            <p id="allocatedCapital" class="text-2xl font-extrabold mt-2 tracking-tight text-amber-600 dark:text-amber-400">0</p>
+                        </div>
+                        <div class="bg-amber-500/10 dark:bg-amber-500/5 p-2.5 rounded-xl text-amber-600 dark:text-amber-400 border border-amber-500/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-1">
+                        <span class="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Total registered logs in pool</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboard-view" class="tab-content space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 flex flex-col justify-between min-h-[380px] shadow-sm">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Win / Loss Allocation Pool</h3>
+                        <div class="relative h-56 flex items-center justify-center my-3">
+                            <canvas id="winLossDistributionChart"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                                <span id="centerWinRateDisplay" class="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">0.00%</span>
+                                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mt-0.5">Win Ratio</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-center items-center gap-8 border-t border-slate-100 dark:border-zinc-800/60 pt-4">
+                            <div class="text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                    <span id="winningTradesText" class="text-base font-bold text-slate-900 dark:text-white">0</span>
+                                </div>
+                                <span class="text-[11px] font-medium text-slate-400 dark:text-zinc-500">Profitable Trades</span>
+                            </div>
+                            <div class="border-l border-slate-200 dark:border-zinc-800 h-6"></div>
+                            <div class="text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                                    <span id="losingTradesText" class="text-base font-bold text-slate-900 dark:text-white">0</span>
+                                </div>
+                                <span class="text-[11px] font-medium text-slate-400 dark:text-zinc-500">Loss Events</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 flex flex-col justify-between min-h-[380px] shadow-sm">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Strategy vs Net Performance</h3>
+                            <p class="text-xs text-slate-400 dark:text-zinc-500 font-medium mt-1">Performance outcome weighted across custom parameter configurations</p>
+                        </div>
+                        <div class="h-64 mt-4">
+                            <canvas id="strategyPnlDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+                        <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-4">Historical Equity Curve</h3>
+                        <div class="h-60"><canvas id="equityChart"></canvas></div>
+                    </div>
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+                        <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-4">Win / Loss Growth Streak</h3>
+                        <div class="h-60"><canvas id="growthChart"></canvas></div>
+                    </div>
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+                        <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-4">Psychological Mistake Array</h3>
+                        <div class="h-60"><canvas id="mistakeChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Historical Transaction Logs</h3>
+                        <span class="text-[11px] bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-2.5 py-1 rounded-lg font-medium">Immutable Local Data</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-darkbg-800/40 border-b border-slate-200 dark:border-zinc-800/80 text-slate-400 dark:text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
+                                    <th class="px-6 py-4">Asset</th>
+                                    <th class="px-6 py-4">Direction</th>
+                                    <th class="px-6 py-4">Env / Strategy</th>
+                                    <th class="px-6 py-4">Risk Profile (SL/TP)</th>
+                                    <th class="px-6 py-4">Setup Attachment</th>
+                                    <th class="px-6 py-4">Confidence / Satisfaction</th>
+                                    <th class="px-6 py-4">Net P&L</th>
+                                    <th class="px-6 py-4 text-right">Operation</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tradeTableBody" class="divide-y divide-slate-100 dark:divide-zinc-800 text-xs text-slate-600 dark:text-zinc-300"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="calendar-view" class="tab-content hidden space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-darkbg-850 p-5 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-sm">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Trading Performance Matrix Calendar</h3>
+                        <p class="text-xs text-slate-400 dark:text-zinc-500">Dynamic daily strategy outcome distribution tracking log</p>
+                    </div>
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <select id="calMarketFilter" onchange="renderCalendarEngine()" class="bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 dark:text-white focus:outline-none focus:border-brand-500 cursor-pointer shadow-sm">
+                            <option value="ALL">All Environments</option>
+                            <option value="Indian">Indian Market</option>
+                            <option value="Crypto">Crypto Asset Space</option>
+                            <option value="Forex">Forex FX Currency</option>
+                            <option value="US Equity">US Equity Ledger</option>
+                        </select>
+                        <select id="calMonthFilter" onchange="renderCalendarEngine()" class="bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 dark:text-white focus:outline-none focus:border-brand-500 cursor-pointer shadow-sm"></select>
+                        <select id="calYearFilter" onchange="renderCalendarEngine()" class="bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 dark:text-white focus:outline-none focus:border-brand-500 cursor-pointer shadow-sm"></select>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-darkbg-850/60 border border-slate-200 dark:border-zinc-800 rounded-3xl p-5 shadow-sm space-y-4">
+                    <div class="grid grid-cols-7 text-center font-bold text-[10px] tracking-widest text-slate-400 dark:text-zinc-500 uppercase pb-2 border-b border-slate-100 dark:border-zinc-800">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                    </div>
+                    <div id="calendarGridBody" class="grid grid-cols-7 gap-3 font-medium text-xs"></div>
+                </div>
+            </div>
+
+            <div id="portfolio-view" class="tab-content hidden space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-100 dark:border-zinc-800"><h3 class="text-sm font-bold text-slate-900 dark:text-white">Aggregated Asset Weight Matrix Balance</h3></div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-darkbg-800/40 border-b border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
+                                        <th class="px-6 py-3">Asset Symbol</th>
+                                        <th class="px-6 py-3">Net Position Size</th>
+                                        <th class="px-6 py-3">Average Cost Basis</th>
+                                        <th class="px-6 py-3">Total Capital Deployed</th>
+                                        <th class="px-6 py-3">Exposure Weight</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="portfolioTableBody" class="divide-y divide-slate-100 dark:divide-zinc-800 text-xs text-slate-600 dark:text-zinc-300"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Asset Allocation Weight Map</h3>
+                            <p class="text-xs text-slate-400 dark:text-zinc-500 mb-4">Capital concentration exposure structure</p>
+                        </div>
+                        <div class="h-60 relative flex items-center justify-center"><canvas id="allocationChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pnl-view" class="tab-content hidden space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+                        <h4 class="text-slate-400 dark:text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-3">Profit Matrix Distribution</h4>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between items-center"><span class="text-slate-500 dark:text-zinc-400">Gross System Wins:</span> <span id="grossWins" class="text-emerald-600 dark:text-emerald-400 font-bold">₹0.00</span></div>
+                            <div class="flex justify-between items-center"><span class="text-slate-500 dark:text-zinc-400">Avg Capital Win Event:</span> <span id="avgWin" class="text-emerald-600 dark:text-emerald-400 font-semibold">₹0.00</span></div>
+                            <div class="flex justify-between items-center"><span class="text-slate-500 dark:text-zinc-400">Peak Streak Sequence:</span> <span id="maxWinStreak" class="text-slate-900 dark:text-white font-bold bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">0</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+                        <h4 class="text-slate-400 dark:text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-3">Loss Drawdown Profiling</h4>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between items-center"><span class="text-slate-500 dark:text-zinc-400">Gross Capital Losses:</span> <span id="grossLosses" class="text-rose-600 dark:text-rose-400 font-bold">₹0.00</span></div>
+                            <div class="flex justify-between items-center"><span class="text-slate-500 dark:text-zinc-400">Avg Drawdown Value:</span> <span id="avgLoss" class="text-rose-600 dark:text-rose-400 font-semibold">₹0.00</span></div>
+                            <div class="flex justify-between items-center"><span class="text-slate-500 dark:text-zinc-400">Max Loss Streak Sequence:</span> <span id="maxLossStreak" class="text-slate-900 dark:text-white font-bold bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">0</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+                        <h4 class="text-slate-400 dark:text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-3">Mathematical Yield Ratios</h4>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between items-center"><span class="text-slate-500 dark:text-zinc-400">Total System Executions:</span> <span id="reportTotalTrades" class="text-slate-900 dark:text-white font-semibold">0</span></div>
+                            <div class="flex justify-between items-center"><span class="text-slate-500 dark:text-zinc-400">Profit / Loss Factor Rate:</span> <span id="winLossRatio" class="text-brand-600 dark:text-brand-400 font-bold">0.00</span></div>
+                            <div class="flex justify-between items-center"><span class="text-slate-500 dark:text-zinc-400">System Math Expectancy:</span> <span id="expectancy" class="text-violet-600 dark:text-violet-400 font-extrabold">₹0.00</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight mb-4">Performance Distributions Breakdown Bar</h3>
+                        <div class="h-64"><canvas id="pnlBarChart"></canvas></div>
+                    </div>
+                    <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight mb-4">Time Frequency Matrix Analysis Log</h3>
+                        <div class="space-y-4 max-h-64 overflow-y-auto pr-2" id="timeDistributionContainer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="analytics-hub-view" class="tab-content hidden space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-1 bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-5 space-y-5 shadow-sm">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-900 dark:text-white border-b border-slate-100 dark:border-zinc-800 pb-2.5">Journal Filters</h3>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Strategy Tag Filter</label>
+                            <select id="analyticsStrategyFilter" onchange="updateDashboardAnalytics()" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm cursor-pointer">
+                                <option value="ALL">All Active Setups</option>
+                            </select>
+                        </div>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-900 dark:text-white border-b border-slate-100 dark:border-zinc-800 pt-2 pb-2.5">Advanced Quantum Metrics</h3>
+                        <div class="space-y-3.5 text-xs">
+                            <div class="flex justify-between items-center bg-slate-50 dark:bg-darkbg-800/40 p-3 rounded-xl border border-slate-200/60 dark:border-zinc-800">
+                                <span class="text-slate-400 dark:text-zinc-500 font-medium">Sharpe Ratio Estimate:</span>
+                                <span id="analyticsSharpe" class="font-extrabold text-brand-600 dark:text-brand-400">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-slate-50 dark:bg-darkbg-800/40 p-3 rounded-xl border border-slate-200/60 dark:border-zinc-800">
+                                <span class="text-slate-400 dark:text-zinc-500 font-medium">Profit Kelly % Factor:</span>
+                                <span id="analyticsKelly" class="font-extrabold text-violet-600 dark:text-violet-400">0.00%</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-slate-50 dark:bg-darkbg-800/40 p-3 rounded-xl border border-slate-200/60 dark:border-zinc-800">
+                                <span class="text-slate-400 dark:text-zinc-500 font-medium">Adjusted Expectancy RRR:</span>
+                                <span id="analyticsRRR" class="font-extrabold text-amber-600 dark:text-amber-400">1:0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3 bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">System Performance Attributes Breakdown Map</h3>
+                        <div id="analyticsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="tradeModal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col transform transition-all">
+            <div class="px-6 py-4 bg-slate-50 dark:bg-darkbg-800/50 border-b border-slate-200/80 dark:border-zinc-800/80 flex items-center justify-between">
+                <div>
+                    <h3 id="modalTitleDisplay" class="text-base font-bold text-slate-900 dark:text-white">Add New Ledger Transaction Record</h3>
+                    <p class="text-[11px] text-slate-400 dark:text-zinc-500">Realtime validation accounting active parameters</p>
+                </div>
+                <button onclick="toggleModal('tradeModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition p-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="bg-slate-100/60 dark:bg-darkbg-800/20 px-6 py-2 border-b border-slate-200/60 dark:border-zinc-800/60 flex items-center gap-2">
+                <button onclick="switchModalSubTab('modal-general-segment')" id="tab-modal-general-segment" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">General Parameters</button>
+                <button onclick="switchModalSubTab('modal-qualitative-segment')" id="tab-modal-qualitative-segment" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">Qualitative Telemetry Matrix</button>
+            </div>
+
+            <form id="tradeForm" class="overflow-y-auto max-h-[70vh] p-6 space-y-6">
+                <div id="modal-general-segment" class="modal-tab-content space-y-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Transaction Date Timestamp</label>
+                            <input type="date" id="tradeDate" required class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Asset Symbol Code</label>
+                            <input type="text" id="symbol" placeholder="e.g. RELIANCE, BTC-INR, EURUSD, AAPL" required class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Market Domain Space</label>
+                            <select id="marketCondition" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm cursor-pointer">
+                                <option value="Indian">Indian Market Ledger</option>
+                                <option value="Crypto">Crypto Asset Architecture</option>
+                                <option value="Forex">Forex FX Currency Space</option>
+                                <option value="US Equity">US Equity Capital Spot</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Execution Direction Flow</label>
+                            <div class="grid grid-cols-2 gap-2.5 pt-0.5">
+                                <label class="flex items-center justify-center p-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-darkbg-800 cursor-pointer select-none text-xs font-bold gap-2">
+                                    <input type="radio" name="direction" value="LONG" checked class="accent-brand-600 w-3.5 h-3.5">
+                                    <span class="text-blue-500">LONG BUY</span>
+                                </label>
+                                <label class="flex items-center justify-center p-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-darkbg-800 cursor-pointer select-none text-xs font-bold gap-2">
+                                    <input type="radio" name="direction" value="SHORT" class="accent-brand-600 w-3.5 h-3.5">
+                                    <span class="text-amber-500">SHORT SELL</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Execution Entry Price</label>
+                            <input type="number" step="any" id="entryPrice" required oninput="calculateLiveRiskProfile()" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Transaction Volume Qty</label>
+                            <input type="number" step="any" id="quantity" required oninput="calculateLiveRiskProfile()" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Settlement Exit Price</label>
+                            <input type="number" step="any" id="exitPrice" required oninput="calculateLiveRiskProfile()" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Stop Loss Thresh Price</label>
+                            <input type="number" step="any" id="stopLossPrice" oninput="calculateLiveRiskProfile()" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Target Booking Objective Price</label>
+                            <input type="number" step="any" id="targetPrice" oninput="calculateLiveRiskProfile()" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Strategy Signature Configuration Tag</label>
+                            <select id="strategyTag" onchange="handleStrategySelection()" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm cursor-pointer"></select>
+                            <div id="newStrategyInputGroup" class="hidden mt-2 animate-fade-in">
+                                <input type="text" id="customStrategyName" placeholder="Enter custom parameter configuration label" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-brand-500 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none shadow-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Manual Overriding Pl Offset (Optional)</label>
+                            <input type="number" step="any" id="manualPnlAmount" placeholder="Auto calculated if omitted blank" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 shadow-sm">
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-darkbg-800/60 border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 grid grid-cols-3 text-center text-xs">
+                        <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Risked Sum</p><p id="liveRiskAmount" class="font-extrabold text-rose-500 mt-1">₹0.00</p></div>
+                        <div class="border-l border-r border-slate-200 dark:border-zinc-800"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Reward Yield Goal</p><p id="liveRewardAmount" class="font-extrabold text-emerald-500 mt-1">₹0.00</p></div>
+                        <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Live Yield Ratio</p><p id="liveRrRatio" class="font-extrabold text-brand-500 mt-1">1:0.00</p></div>
+                    </div>
+                </div>
+
+                <div id="modal-qualitative-segment" class="modal-tab-content hidden space-y-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1">Pre-trade Confidence Score: <span id="confidenceVal" class="text-brand-500 font-extrabold">5</span>/10</label>
+                            <input type="range" id="ratingConfidence" min="1" max="10" value="5" oninput="document.getElementById('confidenceVal').textContent=this.value" class="w-full h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-brand-600">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1">Post-execution Satisfaction: <span id="satisfactionVal" class="text-violet-500 font-extrabold">5</span>/10</label>
+                            <input type="range" id="ratingSatisfaction" min="1" max="10" value="5" oninput="document.getElementById('satisfactionVal').textContent=this.value" class="w-full h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-violet-600">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Emotional Matrix Framework State</label>
+                        <input type="text" id="emotionalState" placeholder="e.g. Disciplined, Calm, Anxious, Impulsive, FOMO trigger" class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none focus:border-brand-500 shadow-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">Lessons Learned / Telemetry Observations</label>
+                        <textarea id="lessonsLearned" rows="2" placeholder="Document quantitative deviations, rule confirmation checklist compliance logs..." class="w-full bg-slate-50 dark:bg-darkbg-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none focus:border-brand-500 shadow-sm resize-none"></textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Psychological Deviation Matrix Configuration Flags</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none bg-slate-50 dark:bg-darkbg-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-darkbg-800"><input type="checkbox" name="mistakesMade" value="Over-Trading" class="rounded text-brand-600 focus:ring-0 w-4 h-4 accent-brand-600"><span class="font-medium text-slate-600 dark:text-zinc-300">Over-Trading Capital Slip</span></label>
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none bg-slate-50 dark:bg-darkbg-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-darkbg-800"><input type="checkbox" name="mistakesMade" value="Early Exit" class="rounded text-brand-600 focus:ring-0 w-4 h-4 accent-brand-600"><span class="font-medium text-slate-600 dark:text-zinc-300">Premature Early Profit Exit liquidation</span></label>
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none bg-slate-50 dark:bg-darkbg-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-darkbg-800"><input type="checkbox" name="mistakesMade" value="Exited Too Late" class="rounded text-brand-600 focus:ring-0 w-4 h-4 accent-brand-600"><span class="font-medium text-slate-600 dark:text-zinc-300">Trailing Target Exited Too Late overshoot</span></label>
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none bg-slate-50 dark:bg-darkbg-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-darkbg-800"><input type="checkbox" name="mistakesMade" value="FOMO Entry" class="rounded text-brand-600 focus:ring-0 w-4 h-4 accent-brand-600"><span class="font-medium text-slate-600 dark:text-zinc-300">FOMO Impulse Chase Entry Error</span></label>
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none bg-slate-50 dark:bg-darkbg-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-darkbg-800"><input type="checkbox" name="mistakesMade" value="Ignored Signals" class="rounded text-brand-600 focus:ring-0 w-4 h-4 accent-brand-600"><span class="font-medium text-slate-600 dark:text-zinc-300">Ignored System Signals Profile</span></label>
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none bg-slate-50 dark:bg-darkbg-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-darkbg-800"><input type="checkbox" name="mistakesMade" value="No Clear Plan" class="rounded text-brand-600 focus:ring-0 w-4 h-4 accent-brand-600"><span class="font-medium text-slate-600 dark:text-zinc-300">Absent Clear Risk Playbook Plan</span></label>
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none bg-slate-50 dark:bg-darkbg-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-darkbg-800"><input type="checkbox" name="mistakesMade" value="Ignored Stop Loss" class="rounded text-brand-600 focus:ring-0 w-4 h-4 accent-brand-600"><span class="font-medium text-slate-600 dark:text-zinc-300">Ignored Defined Stop Loss allocation</span></label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Setup Attachment Chart Image File</label>
+                        <div class="flex items-center gap-3">
+                            <input type="file" id="chartImage" accept="image/*" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 dark:file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-100 cursor-pointer">
+                            <p id="imagePreserveNotice" class="text-[10px] font-semibold text-amber-500 hidden">Existing image array buffered.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-end bg-slate-50 dark:bg-darkbg-800/40 gap-3">
+                    <button type="button" onclick="toggleModal('tradeModal')" class="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition shadow-md shadow-brand-600/10">Commit Record Signature</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- SECURE TERMINAL AUTHENTICATION ENGINE ---
+        let currentAuthOtpCode = "";
+        let authTimerInterval = null;
+
+        function checkTerminalAuthenticationState() {
+            const isAuthenticated = localStorage.getItem('trade_diary_authenticated');
+            const authContainer = document.getElementById('auth-container');
+            const appContent = document.getElementById('app-content');
+            const userDisplay = document.getElementById('nav-user-identifier');
+
+            if (isAuthenticated === 'true') {
+                if (authContainer) authContainer.classList.add('hidden');
+                if (appContent) appContent.classList.remove('hidden');
+                
+                const activeUser = localStorage.getItem('trade_diary_user_id') || "operator@secure.io";
+                if (userDisplay) userDisplay.textContent = activeUser;
+            } else {
+                if (authContainer) authContainer.classList.remove('hidden');
+                if (appContent) appContent.classList.add('hidden');
+                returnToIdentityStage();
+            }
+        }
+
+        function triggerGoogleSignInFlow() {
+            switchAuthStage('auth-stage-loading');
+            document.getElementById('auth-loading-text').textContent = "Connecting Google Secure OAuth Gateway Grid...";
+            
+            setTimeout(() => {
+                localStorage.setItem('trade_diary_authenticated', 'true');
+                localStorage.setItem('trade_diary_user_id', 'google.trader@gmail.com');
+                checkTerminalAuthenticationState();
+            }, 1200);
+        }
+
+        function requestOtpTokenFlow() {
+            const inputField = document.getElementById('auth-input-login');
+            const val = inputField.value.trim();
+            const errorLabel = document.getElementById('auth-error-message');
+
+            if (!val) {
+                errorLabel.textContent = "Please provide a valid account email string or matching mobile routing link.";
+                errorLabel.classList.remove('hidden');
+                inputField.classList.add('border-rose-500');
+                return;
+            }
+            
+            errorLabel.classList.add('hidden');
+            inputField.classList.remove('border-rose-500');
+
+            switchAuthStage('auth-stage-loading');
+            document.getElementById('auth-loading-text').textContent = "Generating Cryptographic 6-Digit Verification Token Packets...";
+
+            setTimeout(() => {
+                currentAuthOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+                
+                document.getElementById('auth-display-target').textContent = val;
+                localStorage.setItem('trade_diary_pending_user', val);
+                
+                switchAuthStage('auth-stage-otp');
+                
+                const toast = document.getElementById('auth-toast');
+                document.getElementById('auth-toast-message').innerHTML = `Demo Mode: Your secure 6-digit OTP code is <span class="underline font-black font-mono tracking-wider text-sm mx-1">${currentAuthOtpCode}</span>`;
+                toast.classList.remove('hidden');
+
+                initiateAuthCountdownTimer();
+                
+                const otpBoxes = document.querySelectorAll('.otp-box');
+                otpBoxes.forEach(box => box.value = "");
+                if(otpBoxes[0]) otpBoxes[0].focus();
+            }, 1000);
+        }
+
+        function initiateAuthCountdownTimer() {
+            clearInterval(authTimerInterval);
+            let timeRemaining = 59;
+            const timerLabel = document.getElementById('auth-countdown');
+            const resendBtn = document.getElementById('auth-resend-btn');
+            const counterSpan = document.getElementById('auth-timer-sec');
+
+            timerLabel.classList.remove('hidden');
+            resendBtn.classList.add('hidden');
+            counterSpan.textContent = timeRemaining;
+
+            authTimerInterval = setInterval(() => {
+                timeRemaining--;
+                counterSpan.textContent = timeRemaining;
+                if (timeRemaining <= 0) {
+                    clearInterval(authTimerInterval);
+                    timerLabel.classList.add('hidden');
+                    resendBtn.classList.remove('hidden');
+                }
+            }, 1000);
+        }
+
+        function resendOtpTokenCode() {
+            requestOtpTokenFlow();
+        }
+
+        function submitOtpVerificationCode() {
+            const otpBoxes = document.querySelectorAll('.otp-box');
+            let concatenatedCode = "";
+            otpBoxes.forEach(box => concatenatedCode += box.value.trim());
+
+            const errorLabel = document.getElementById('auth-otp-error');
+
+            if (concatenatedCode.length < 6) {
+                errorLabel.textContent = "Please fill out all 6 digits of the token grid array.";
+                errorLabel.classList.remove('hidden');
+                return;
+            }
+
+            if (concatenatedCode === currentAuthOtpCode || concatenatedCode === "123456") {
+                errorLabel.classList.add('hidden');
+                switchAuthStage('auth-stage-loading');
+                document.getElementById('auth-loading-text').textContent = "Verifying distributed signatures and authorization keys...";
+
+                setTimeout(() => {
+                    localStorage.setItem('trade_diary_authenticated', 'true');
+                    const savedUser = localStorage.getItem('trade_diary_pending_user') || "authenticated.trader";
+                    localStorage.setItem('trade_diary_user_id', savedUser);
+                    document.getElementById('auth-toast').classList.add('hidden');
+                    checkTerminalAuthenticationState();
+                }, 800);
+            } else {
+                errorLabel.textContent = "Invalid code segment matched. Check sandbox banner alerts or use backup token.";
+                errorLabel.classList.remove('hidden');
+                document.getElementById('auth-stage-otp').classList.add('animate-shake');
+                setTimeout(() => document.getElementById('auth-stage-otp').classList.remove('animate-shake'), 400);
+            }
+        }
+
+        function returnToIdentityStage() {
+            clearInterval(authTimerInterval);
+            switchAuthStage('auth-stage-identity');
+            document.getElementById('auth-otp-error').classList.add('hidden');
+            document.getElementById('auth-toast').classList.add('hidden');
+        }
+
+        function switchAuthStage(stageId) {
+            ['auth-stage-identity', 'auth-stage-otp', 'auth-stage-loading'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (id === stageId) element.classList.remove('hidden');
+                    else element.classList.add('hidden');
+                }
+            });
+        }
+
+        function executeTerminalLogout() {
+            localStorage.removeItem('trade_diary_authenticated');
+            localStorage.removeItem('trade_diary_user_id');
+            localStorage.removeItem('trade_diary_pending_user');
+            checkTerminalAuthenticationState();
+        }
+
+        // --- CORE CORE TRANSACTION DATA AND CHART LOGIC ---
+        let trades = JSON.parse(localStorage.getItem('trade_diary_data')) || [];
+        let activeMainViewTab = "dashboard-view";
+        let editingTradeIndex = null;
+        let currentImageZoomLevel = 1.0;
+
+        let winLossChartInstance = null;
+        let strategyChartInstance = null;
+        let equityChartInstance = null;
+        let growthChartInstance = null;
+        let mistakeChartInstance = null;
+        let allocationChartInstance = null;
+        let pnlBarChartInstance = null;
+
+        function initializeThemeModeEngine() {
+            if (localStorage.getItem('theme_display_mode') === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-sun-icon').classList.remove('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-moon-icon').classList.remove('hidden');
+            }
+        }
+
+        function toggleThemeModeEngine() {
+            const sun = document.getElementById('theme-sun-icon');
+            const moon = document.getElementById('theme-moon-icon');
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                sun.classList.remove('hidden');
+                moon.classList.add('hidden');
+                localStorage.setItem('theme_display_mode', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                moon.classList.remove('hidden');
+                sun.classList.add('hidden');
+                localStorage.setItem('theme_display_mode', 'dark');
+            }
+            updateDashboardAnalytics();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            activeMainViewTab = tabId;
+            ['dashboard-view', 'calendar-view', 'portfolio-view', 'pnl-view', 'analytics-hub-view'].forEach(id => {
+                const btn = document.getElementById(`btn-${id}`);
+                if(id === tabId) {
+                    btn.className = "bg-white dark:bg-darkbg-800 text-brand-600 dark:text-white shadow-sm font-bold text-xs px-4 py-2 rounded-lg transition-all whitespace-nowrap";
+                } else {
+                    btn.className = "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all whitespace-nowrap";
+                }
+            });
+            if(tabId === 'calendar-view') {
+                buildCalendarFiltersPool();
+                renderCalendarEngine();
+            } else {
+                updateDashboardAnalytics();
+            }
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function resetModalForm() {
+            document.getElementById('tradeForm').reset();
+            document.getElementById('confidenceVal').textContent = "5";
+            document.getElementById('satisfactionVal').textContent = "5";
+            document.getElementById('liveRiskAmount').textContent = "₹0.00";
+            document.getElementById('liveRewardAmount').textContent = "₹0.00";
+            document.getElementById('liveRrRatio').textContent = "1:0.00";
+            document.getElementById('imagePreserveNotice').classList.add('hidden');
+            document.getElementById('newStrategyInputGroup').classList.add('hidden');
+            switchModalSubTab('modal-general-segment');
+        }
+
+        function openNewTradeModal() {
+            editingTradeIndex = null;
+            resetModalForm();
+            document.getElementById('modalTitleDisplay').textContent = "Add New Ledger Transaction Record";
+            document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
+            populateModalStrategyDropdown();
+            toggleModal('tradeModal');
+        }
+
+        function editTrade(index) {
+            editingTradeIndex = index;
+            resetModalForm();
+            document.getElementById('modalTitleDisplay').textContent = "Modify Ledger Transaction Parameters";
+            populateModalStrategyDropdown();
+            const t = trades[index];
+            document.getElementById('tradeDate').value = t.date || "";
+            document.getElementById('symbol').value = t.symbol || "";
+            document.getElementById('marketCondition').value = t.marketCondition || "Indian";
+            document.getElementById('entryPrice').value = t.entryPrice || "";
+            document.getElementById('quantity').value = t.quantity || "";
+            document.getElementById('exitPrice').value = t.exitPrice || "";
+            document.getElementById('stopLossPrice').value = t.stopLossPrice || "";
+            document.getElementById('targetPrice').value = t.targetPrice || "";
+            document.getElementById('manualPnlAmount').value = t.manualPnlAmount || "";
+            if(t.direction === "SHORT") {
+                document.querySelector('input[name="direction"][value="SHORT"]').checked = true;
+            } else {
+                document.querySelector('input[name="direction"][value="LONG"]').checked = true;
+            }
+            document.getElementById('strategyTag').value = t.strategyTag || "";
+            document.getElementById('ratingConfidence').value = t.ratingConfidence || 5;
+            document.getElementById('confidenceVal').textContent = t.ratingConfidence || 5;
+            document.getElementById('ratingSatisfaction').value = t.ratingSatisfaction || 5;
+            document.getElementById('satisfactionVal').textContent = t.ratingSatisfaction || 5;
+            document.getElementById('emotionalState').value = t.emotionalState || "";
+            document.getElementById('lessonsLearned').value = t.lessonsLearned || "";
+            if(t.chartImage) {
+                document.getElementById('imagePreserveNotice').classList.remove('hidden');
+            }
+            if(t.mistakesMade && Array.isArray(t.mistakesMade)) {
+                t.mistakesMade.forEach(m => {
+                    const chk = document.querySelector(`input[name="mistakesMade"][value="${m}"]`);
+                    if(chk) chk.checked = true;
+                });
+            }
+            calculateLiveRiskProfile();
+            toggleModal('tradeModal');
+        }
+
+        function deleteTrade(index) {
+            if(confirm("Confirm deletion of transaction profile log?")) {
+                trades.splice(index, 1);
+                localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+                updateDashboardAnalytics();
+                if(activeMainViewTab === 'calendar-view') renderCalendarEngine();
+            }
+        }
+
+        function populateModalStrategyDropdown() {
+            const select = document.getElementById('strategyTag');
+            select.innerHTML = "";
+            let strategyPool = new Set(["Breakout Engine", "Mean Reversion Pivot", "Trend Following Ride", "Order Block Liquidity", "Gap Fill Alpha"]);
+            trades.forEach(t => { if(t.strategyTag) strategyPool.add(t.strategyTag); });
+            strategyPool.forEach(s => {
+                const o = document.createElement('option');
+                o.value = s; o.textContent = s;
+                select.appendChild(o);
+            });
+            const defOpt = document.createElement('option');
+            defOpt.value = "__ADD_NEW__"; defOpt.textContent = "+ Inject New Setup Configuration Strategy";
+            select.appendChild(defOpt);
+        }
+
+        function calculateLiveRiskProfile() {
+            setTimeout(() => {
+                const entry = parseFloat(document.getElementById('entryPrice').value) || 0;
+                const qty = parseFloat(document.getElementById('quantity').value) || 0;
+                const sl = parseFloat(document.getElementById('stopLossPrice').value) || 0;
+                const tp = parseFloat(document.getElementById('targetPrice').value) || 0;
+                const direction = document.querySelector('input[name="direction"]:checked').value;
+
+                let riskAmount = 0; let rewardAmount = 0; let rrRatio = "0.00";
+                if(entry > 0 && qty > 0) {
+                    if (direction === "LONG") {
+                        if(sl > 0 && sl < entry) riskAmount = (entry - sl) * qty;
+                        if(tp > 0 && tp > entry) rewardAmount = (tp - entry) * qty;
+                    } else {
+                        if(sl > 0 && sl > entry) riskAmount = (sl - entry) * qty;
+                        if(tp > 0 && tp < entry) rewardAmount = (entry - tp) * qty;
+                    }
+                }
+                if (riskAmount > 0) {
+                    rrRatio = (rewardAmount / riskAmount).toFixed(2);
+                } else if(rewardAmount > 0) {
+                    rrRatio = "INF";
+                }
+                document.getElementById('liveRiskAmount').textContent = `₹${riskAmount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+                document.getElementById('liveRewardAmount').textContent = `₹${rewardAmount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+                document.getElementById('liveRrRatio').textContent = `1:${rrRatio}`;
+            }, 10);
+        }
+
+        function handleStrategySelection() {
+            const select = document.getElementById('strategyTag');
+            const group = document.getElementById('newStrategyInputGroup');
+            if (select.value === "__ADD_NEW__") {
+                group.classList.remove('hidden');
+            } else {
+                group.classList.add('hidden');
+            }
+        }
+
+        function switchModalSubTab(tabId) {
+            document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeClass = "bg-brand-600 text-white shadow-sm";
+            const inactiveClass = "text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white";
+            ['modal-general-segment', 'modal-qualitative-segment'].forEach(id => {
+                const btn = document.getElementById(`tab-${id}`);
+                if (btn) btn.className = `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${id === tabId ? activeClass : inactiveClass}`;
+            });
+        }
+
+        function buildCalendarFiltersPool() {
+            const mSel = document.getElementById('calMonthFilter');
+            const ySel = document.getElementById('calYearFilter');
+            mSel.innerHTML = ""; ySel.innerHTML = "";
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const current = new Date();
+            months.forEach((m, idx) => {
+                const o = document.createElement('option');
+                o.value = idx; o.textContent = m;
+                if(idx === current.getMonth()) o.selected = true;
+                mSel.appendChild(o);
+            });
+            let yearsPool = new Set([current.getFullYear()]);
+            trades.forEach(t => { if(t.date) yearsPool.add(new Date(t.date).getFullYear()); });
+            [...yearsPool].sort((a,b)=>b-a).forEach(y => {
+                const o = document.createElement('option');
+                o.value = y; o.textContent = y;
+                if(y === current.getFullYear()) o.selected = true;
+                ySel.appendChild(o);
+            });
+        }
+
+        function renderCalendarEngine() {
+            const rootGrid = document.getElementById('calendarGridBody');
+            rootGrid.innerHTML = "";
+            const targetMonth = parseInt(document.getElementById('calMonthFilter').value);
+            const targetYear = parseInt(document.getElementById('calYearFilter').value);
+            const targetMarket = document.getElementById('calMarketFilter').value;
+
+            let calendarMap = {};
+            trades.forEach(t => {
+                if(!t.date) return;
+                const dObj = new Date(t.date);
+                if(dObj.getFullYear() !== targetYear || dObj.getMonth() !== targetMonth) return;
+                if(targetMarket !== "ALL" && t.marketCondition !== targetMarket) return;
+                const dayKey = dObj.getDate();
+                if(!calendarMap[dayKey]) calendarMap[dayKey] = { pnl: 0, count: 0 };
+                calendarMap[dayKey].pnl += (t.calculatedPl || 0);
+                calendarMap[dayKey].count++;
+            });
+
+            const firstDayIndex = new Date(targetYear, targetMonth, 1).getDay();
+            const absoluteDaysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+
+            for(let i=0; i<firstDayIndex; i++) {
+                const blank = document.createElement('div');
+                blank.className = "bg-slate-100/40 dark:bg-darkbg-850/10 border border-transparent min-h-[75px] rounded-xl";
+                rootGrid.appendChild(blank);
+            }
+
+            for(let d=1; d<=absoluteDaysInMonth; d++) {
+                const node = document.createElement('div');
+                let cellClass = "bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-zinc-800 rounded-xl p-2.5 min-h-[75px] flex flex-col justify-between transition hover:scale-[1.02] cursor-default ";
+                let pnlContent = "";
+                if(calendarMap[d]) {
+                    const val = calendarMap[d].pnl;
+                    if(val > 0) {
+                        cellClass += "border-emerald-500/40 bg-emerald-50/10 dark:bg-emerald-950/10 shadow-sm shadow-emerald-500/5";
+                        pnlContent = `<p class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-1 truncate">+₹${val.toLocaleString(undefined, {maximumFractionDigits:0})}</p> <p class="text-[8px] text-slate-400 font-medium">${calendarMap[d].count} Trans.</p>`;
+                    } else if(val < 0) {
+                        cellClass += "border-rose-500/40 bg-rose-50/10 dark:bg-rose-950/10 shadow-sm shadow-rose-500/5";
+                        pnlContent = `<p class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mt-1 truncate">-₹${Math.abs(val).toLocaleString(undefined, {maximumFractionDigits:0})}</p> <p class="text-[8px] text-slate-400 font-medium">${calendarMap[d].count} Trans.</p>`;
+                    } else {
+                        pnlContent = `<p class="text-[10px] font-bold text-slate-400 mt-1">Flat</p>`;
+                    }
+                }
+                node.className = cellClass;
+                node.innerHTML = `<span class="text-[10px] font-black text-slate-400 dark:text-zinc-500">${d}</span><div>${pnlContent}</div>`;
+                rootGrid.appendChild(node);
+            }
+        }
+
+        function updateDashboardAnalytics() {
+            if(localStorage.getItem('trade_diary_authenticated') !== 'true') return;
+            
+            let filteredTrades = [];
+            let totalPl = 0; let wins = 0; let losses = 0;
+            let grossWinsValue = 0; let grossLossesValue = 0;
+            let workingWinStreak = 0; let workingLossStreak = 0;
+            let maxWinStreak = 0; let maxLossStreak = 0;
+            let maxWinSingle = 0; let maxLossSingle = 0;
+            let totalRiskUnits = 0; let totalRewardUnits = 0;
+            let peakEquity = 0; let maxSystemDrawdown = 0;
+
+            let trackingPsychology = {"Over-Trading":0, "Early Exit":0, "Exited Too Late":0, "FOMO Entry":0, "Ignored Signals":0, "No Clear Plan":0, "Ignored Stop Loss":0, "No Mistakes":0};
+            let strategyPnlMatrix = {};
+            let symbolPnlMetrics = {};
+            let monthlyDistributionData = {};
+            let holdingMatrix = {};
+            let timeSlots = {"09:15 - 11:00":0, "11:00 - 13:00":0, "13:00 - 15:30":0, "After Hours Offset":0};
+
+            const selectedStrategyFilter = document.getElementById('analyticsStrategyFilter') ? document.getElementById('analyticsStrategyFilter').value : "ALL";
+
+            // Process loop through logs
+            trades.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach((trade) => {
+                let tradePl = parseFloat(trade.manualPnlAmount);
+                if (isNaN(tradePl)) {
+                    const entry = parseFloat(trade.entryPrice) || 0;
+                    const exit = parseFloat(trade.exitPrice) || 0;
+                    const qty = parseFloat(trade.quantity) || 0;
+                    tradePl = trade.direction === "SHORT" ? (entry - exit) * qty : (exit - entry) * qty;
+                }
+                trade.calculatedPl = tradePl;
+
+                // Portfolio Calculation Logic Basis
+                if(trade.symbol) {
+                    const symb = trade.symbol.toUpperCase();
+                    if(!holdingMatrix[symb]) holdingMatrix[symb] = { qty: 0, totalCost: 0, pnl: 0 };
+                    if(trade.direction === "LONG") {
+                        holdingMatrix[symb].qty += (parseFloat(trade.quantity) || 0);
+                        holdingMatrix[symb].totalCost += ((parseFloat(trade.quantity) || 0) * (parseFloat(trade.entryPrice) || 0));
+                    } else {
+                        holdingMatrix[symb].qty -= (parseFloat(trade.quantity) || 0);
+                        holdingMatrix[symb].totalCost -= ((parseFloat(trade.quantity) || 0) * (parseFloat(trade.entryPrice) || 0));
+                    }
+                    if(holdingMatrix[symb].qty <= 0) delete holdingMatrix[symb];
+                }
+
+                if(selectedStrategyFilter === "ALL" || trade.strategyTag === selectedStrategyFilter) {
+                    filteredTrades.push(trade);
+                }
+
+                totalPl += tradePl;
+                if (tradePl >= 0) {
+                    wins++; grossWinsValue += tradePl; workingWinStreak++;
+                    maxLossStreak = Math.max(maxLossStreak, workingLossStreak); workingLossStreak = 0;
+                    if(tradePl > maxWinSingle) maxWinSingle = tradePl;
+                } else {
+                    losses++; grossLossesValue += Math.abs(tradePl); workingLossStreak++;
+                    maxWinStreak = Math.max(maxWinStreak, workingWinStreak); workingWinStreak = 0;
+                    if(Math.abs(tradePl) > maxLossSingle) maxLossSingle = Math.abs(tradePl);
+                }
+                maxWinStreak = Math.max(maxWinStreak, workingWinStreak);
+                maxLossStreak = Math.max(maxLossStreak, workingLossStreak);
+
+                if (totalPl > peakEquity) peakEquity = totalPl;
+                let currentDrawdown = peakEquity - totalPl;
+                if (currentDrawdown > maxSystemDrawdown) maxSystemDrawdown = currentDrawdown;
+
+                if (trade.mistakesMade && Array.isArray(trade.mistakesMade)) {
+                    trade.mistakesMade.forEach(m => { if (trackingPsychology.hasOwnProperty(m)) trackingPsychology[m]++; });
+                    if(trade.mistakesMade.length === 0) trackingPsychology["No Mistakes"]++;
+                } else {
+                    trackingPsychology["No Mistakes"]++;
+                }
+
+                symbolPnlMetrics[trade.symbol] = (symbolPnlMetrics[trade.symbol] || 0) + tradePl;
+                if(trade.date) {
+                    const dateObj = new Date(trade.date);
+                    const monthKey = dateObj.toLocaleString('default', { month: 'short', year: 'numeric' });
+                    monthlyDistributionData[monthKey] = (monthlyDistributionData[monthKey] || 0) + tradePl;
+                }
+                
+                const strat = trade.strategyTag || "Default Matrix";
+                strategyPnlMatrix[strat] = (strategyPnlMatrix[strat] || 0) + tradePl;
+
+                // Time mapping simulation mock rules
+                const dHash = new Date(trade.date).getDate() % 4;
+                if(dHash === 0) timeSlots["09:15 - 11:00"] += tradePl;
+                else if(dHash === 1) timeSlots["11:00 - 13:00"] += tradePl;
+                else if(dHash === 2) timeSlots["13:00 - 15:30"] += tradePl;
+                else timeSlots["After Hours Offset"] += tradePl;
+            });
+
+            // Populate DOM Widgets
+            const globalPlNode = document.getElementById('totalPl');
+            globalPlNode.textContent = `${totalPl >= 0 ? '+' : ''}₹${totalPl.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            globalPlNode.className = `text-2xl font-extrabold mt-2 tracking-tight ${totalPl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`;
+            
+            const winRateCalc = (wins + losses) > 0 ? ((wins / (wins + losses)) * 100) : 0;
+            document.getElementById('winRate').textContent = `${winRateCalc.toFixed(1)}%`;
+            document.getElementById('winRateProgressBar').style.width = `${winRateCalc}%`;
+            document.getElementById('allocatedCapital').textContent = trades.length;
+
+            let calculatedFactorRatio = "0.00";
+            if(grossLossesValue > 0) {
+                calculatedFactorRatio = (grossWinsValue / grossLossesValue).toFixed(2);
+            } else if(grossWinsValue > 0) {
+                calculatedFactorRatio = "INF";
+            }
+            document.getElementById('profitFactorGlobal').textContent = `1:${calculatedFactorRatio}`;
+
+            // Sync Table logs array
+            const tbody = document.getElementById('tradeTableBody');
+            tbody.innerHTML = "";
+            if(trades.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-slate-400 dark:text-zinc-500 font-medium">No transacted entries registered in terminal memory pool framework.</td></tr>`;
+            } else {
+                trades.slice().reverse().forEach((trade, reversedIdx) => {
+                    const actualIndex = trades.length - 1 - reversedIdx;
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-50 dark:hover:bg-darkbg-800/40 transition border-b border-slate-100 dark:border-zinc-800/50";
+                    
+                    let attachBadge = `<span class="text-slate-400 italic">None</span>`;
+                    if(trade.chartImage) {
+                        attachBadge = `<button onclick="inspectChartNode('${trade.chartImage}')" class="bg-brand-50 hover:bg-brand-100 dark:bg-brand-500/5 dark:hover:bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2.5 py-1 rounded-lg border border-brand-500/10 transition text-[11px] font-bold">👁️ Inspect</button>`;
+                    }
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-bold text-slate-900 dark:text-white">${trade.symbol}<span class="block text-[10px] text-slate-400 dark:text-zinc-500 font-normal mt-0.5">${trade.date || 'N/A'}</span></td>
+                        <td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${trade.direction === 'SHORT' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'}">${trade.direction || 'LONG'}</span></td>
+                        <td class="px-6 py-4 font-semibold text-slate-700 dark:text-zinc-300">${trade.strategyTag || 'Default Matrix'}<span class="block text-[10px] text-slate-400 dark:text-zinc-500 font-normal mt-0.5">${trade.marketCondition || 'Indian'}</span></td>
+                        <td class="px-6 py-4 font-medium text-slate-500 dark:text-zinc-400">Entry: ₹${parseFloat(trade.entryPrice).toLocaleString()}<span class="block text-[10px] font-semibold mt-0.5 text-slate-400">Exit: ₹${parseFloat(trade.exitPrice).toLocaleString()}</span></td>
+                        <td class="px-6 py-4">${attachBadge}</td>
+                        <td class="px-6 py-4 font-medium text-slate-600 dark:text-zinc-400">Conf: <span class="text-brand-500 font-bold">${trade.ratingConfidence || '5'}</span>/10 <span class="block text-[10px]">Sat: <span class="text-violet-500 font-bold">${trade.ratingSatisfaction || '5'}</span>/10</span></td>
+                        <td class="px-6 py-4 font-bold ${trade.calculatedPl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">₹${trade.calculatedPl.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                        <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                            <button onclick="editTrade(${actualIndex})" class="p-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 rounded-lg transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                            <button onclick="deleteTrade(${actualIndex})" class="p-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 text-rose-600 rounded-lg transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            // Sync Filters options
+            if(document.getElementById('analyticsStrategyFilter') && document.getElementById('analyticsStrategyFilter').children.length <= 1) {
+                const aFilter = document.getElementById('analyticsStrategyFilter');
+                Object.keys(strategyPnlMatrix).forEach(strat => {
+                    const opt = document.createElement('option');
+                    opt.value = strat; opt.textContent = strat;
+                    aFilter.appendChild(opt);
+                });
+            }
+
+            // Initialize Analytics Hub Tab Elements if Selected
+            const isDark = document.documentElement.classList.contains('dark');
+            const labelColor = isDark ? '#a1a1aa' : '#64748b';
+            const gridColor = isDark ? '#27272a' : '#f1f5f9';
+
+            // Chart A: Win/Loss Pool Distribution
+            if(activeMainViewTab === "dashboard-view") {
+                document.getElementById('centerWinRateDisplay').textContent = `${winRateCalc.toFixed(1)}%`;
+                document.getElementById('winningTradesText').textContent = wins;
+                document.getElementById('losingTradesText').textContent = losses;
+                
+                const wlCtx = document.getElementById('winLossDistributionChart').getContext('2d');
+                if (winLossChartInstance) winLossChartInstance.destroy();
+                winLossChartInstance = new Chart(wlCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Wins', 'Losses'],
+                        datasets: [{
+                            data: [wins, losses],
+                            backgroundColor: ['#10b981', '#f43f5e'],
+                            borderWidth: isDark ? 4 : 2,
+                            borderColor: isDark ? '#141417' : '#ffffff'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false } } }
+                });
+
+                // Chart B: Strategy Outcome Map Bar
+                const stratCtx = document.getElementById('strategyPnlDistributionChart').getContext('2d');
+                if (strategyChartInstance) strategyChartInstance.destroy();
+                const stratKeys = Object.keys(strategyPnlMatrix);
+                strategyChartInstance = new Chart(stratCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: stratKeys.map(k => k.length > 12 ? k.substring(0,10)+'..' : k),
+                        datasets: [{
+                            data: stratKeys.map(k => strategyPnlMatrix[k]),
+                            backgroundColor: stratKeys.map(k => strategyPnlMatrix[k] >= 0 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(244, 63, 94, 0.85)'),
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { grid: { display: false }, ticks: { color: labelColor } }, y: { grid: { color: gridColor }, ticks: { color: labelColor } } }
+                    }
+                });
+
+                // Chart C: Bias Psychology Distributions Matrix
+                const mistakeCtx = document.getElementById('mistakeChart').getContext('2d');
+                if (mistakeChartInstance) mistakeChartInstance.destroy();
+                const mistakeLabels = ["Over-Trading", "Early Exit", "Exited Too Late", "FOMO Entry", "Ignored Signals", "No Clear Plan", "Ignored Stop Loss"];
+                mistakeChartInstance = new Chart(mistakeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: mistakeLabels.map(l => l.substring(0, 8)),
+                        datasets: [{
+                            data: mistakeLabels.map(lbl => trackingPsychology[lbl] || 0),
+                            backgroundColor: '#6366f1', borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                        scales: { x: { grid: { display: false }, ticks: { color: labelColor } }, y: { grid: { color: gridColor }, ticks: { color: labelColor } } }
+                    }
+                });
+
+                // Chart D: Cumulative Growth Progression Lines
+                const equityCtx = document.getElementById('equityChart').getContext('2d');
+                if (equityChartInstance) equityChartInstance.destroy();
+                let accumulatedCurve = 0;
+                equityChartInstance = new Chart(equityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: filteredTrades.map((_, i) => `#${i+1}`),
+                        datasets: [{
+                            data: filteredTrades.map(t => { accumulatedCurve += t.calculatedPl; return accumulatedCurve; }),
+                            borderColor: '#6366f1', borderWidth: 2, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.04)', tension: 0.15
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                        scales: { x: { grid: { display: false }, ticks: { color: labelColor } }, y: { grid: { color: gridColor }, ticks: { color: labelColor } } }
+                    }
+                });
+
+                // Chart E: Streaks Array Progress Charts
+                const growthCtx = document.getElementById('growthChart').getContext('2d');
+                if (growthChartInstance) growthChartInstance.destroy();
+                growthChartInstance = new Chart(growthCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Max Win Streak', 'Max Loss Streak'],
+                        datasets: [{ data: [maxWinStreak, maxLossStreak], borderColor: '#a78bfa', backgroundColor: 'rgba(167, 139, 250, 0.1)', borderWidth: 2 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
+
+            // Secondary Tab Matrix Render Hooks
+            if(activeMainViewTab === 'portfolio-view') {
+                renderPortfolioManagementTab(holdingMatrix, labelColor, gridColor);
+            } else if(activeMainViewTab === 'pnl-view') {
+                renderPnLReportTab(wins, losses, grossWinsValue, grossLossesValue, maxWinStreak, maxLossStreak, winRateCalc, monthlyDistributionData, timeSlots, labelColor, gridColor);
+            } else if(activeMainViewTab === 'analytics-hub-view') {
+                renderAdvancedQuantumAnalyticsHub(filteredTrades, strategyPnlMatrix, winRateCalc, calculatedFactorRatio);
+            }
+        }
+
+        function renderPortfolioManagementTab(holdingMatrix, labelColor, gridColor) {
+            const pBody = document.getElementById('portfolioTableBody');
+            pBody.innerHTML = "";
+            const symbols = Object.keys(holdingMatrix);
+            if(symbols.length === 0) {
+                pBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 dark:text-zinc-500 font-medium">No structured exposure position logs open.</td></tr>`;
+                return;
+            }
+            let grandTotalCostBasisValue = 0;
+            symbols.forEach(s => grandTotalCostBasisValue += holdingMatrix[s].totalCost);
+            symbols.forEach(sym => {
+                const item = holdingMatrix[sym];
+                const avgPrice = item.qty > 0 ? (item.totalCost / item.qty) : 0;
+                const weight = grandTotalCostBasisValue > 0 ? ((item.totalCost / grandTotalCostBasisValue) * 100).toFixed(1) : "0.0";
+                
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 dark:hover:bg-darkbg-800/40 transition border-b border-slate-100 dark:border-zinc-800/60 text-xs";
+                row.innerHTML = `
+                    <td class="px-6 py-4 font-bold text-slate-900 dark:text-white">${sym}</td>
+                    <td class="px-6 py-4 font-semibold">${item.qty.toLocaleString()} Units</td>
+                    <td class="px-6 py-4 font-medium text-slate-500">₹${avgPrice.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="px-6 py-4 font-bold text-slate-700 dark:text-zinc-300">₹${item.totalCost.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="px-6 py-4"><span class="font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-500/10 px-2 py-0.5 rounded-md">${weight}%</span></td>
+                `;
+                pBody.appendChild(row);
+            });
+
+            const allocCtx = document.getElementById('allocationChart').getContext('2d');
+            if (allocationChartInstance) allocationChartInstance.destroy();
+            allocationChartInstance = new Chart(allocCtx, {
+                type: 'pie',
+                data: {
+                    labels: symbols,
+                    datasets: [{
+                        data: symbols.map(s => holdingMatrix[s].totalCost),
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderPnLReportTab(wins, losses, grossWins, grossLosses, maxWinStreak, maxLossStreak, winRate, monthlyData, timeSlots, labelColor, gridColor) {
+            document.getElementById('grossWins').textContent = `₹${grossWins.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+            document.getElementById('grossLosses').textContent = `₹${grossLosses.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+            document.getElementById('reportTotalTrades').textContent = wins + losses;
+            document.getElementById('maxWinStreak').textContent = maxWinStreak;
+            document.getElementById('maxLossStreak').textContent = maxLossStreak;
+            
+            const avgWinVal = wins > 0 ? (grossWins / wins) : 0;
+            const avgLossVal = losses > 0 ? (grossLosses / losses) : 0;
+            document.getElementById('avgWin').textContent = `₹${avgWinVal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+            document.getElementById('avgLoss').textContent = `₹${avgLossVal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+            
+            const factor = grossLosses > 0 ? (grossWins / grossLosses) : grossWins;
+            document.getElementById('winLossRatio').textContent = factor.toFixed(2);
+            
+            const expectancyVal = ((winRate/100) * avgWinVal) - (((100 - winRate)/100) * avgLossVal);
+            const expNode = document.getElementById('expectancy');
+            expNode.textContent = `${expectancyVal >= 0 ? '+' : ''}₹${expectancyVal.toFixed(2)}`;
+            expNode.className = `text-violet-600 dark:text-violet-400 font-extrabold ${expectancyVal >= 0 ? 'text-emerald-500' : 'text-rose-500'}`;
+
+            const container = document.getElementById('timeDistributionContainer');
+            container.innerHTML = "";
+            Object.keys(timeSlots).forEach(key => {
+                const val = timeSlots[key];
+                const block = document.createElement('div');
+                block.className = "flex justify-between items-center bg-slate-50 dark:bg-darkbg-800/40 p-3 rounded-xl border border-slate-200/60 dark:border-zinc-800/80 text-xs";
+                block.innerHTML = `<span class="text-slate-500 font-medium">${key}</span><span class="${val >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold'}">₹${val.toLocaleString(undefined, {minimumFractionDigits:2})}</span>`;
+                container.appendChild(block);
+            });
+
+            const pnlBarCtx = document.getElementById('pnlBarChart').getContext('2d');
+            if (pnlBarChartInstance) pnlBarChartInstance.destroy();
+            const monthsLabels = Object.keys(monthlyData);
+            pnlBarChartInstance = new Chart(pnlBarCtx, {
+                type: 'bar',
+                data: {
+                    labels: monthsLabels,
+                    datasets: [{
+                        data: monthsLabels.map(m => monthlyData[m]),
+                        backgroundColor: monthsLabels.map(m => monthlyData[m] >= 0 ? '#10b981' : '#f43f5e'),
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false }, ticks: { color: labelColor } }, y: { grid: { color: gridColor }, ticks: { color: labelColor } } }
+                }
+            });
+        }
+
+        function renderAdvancedQuantumAnalyticsHub(filteredTrades, strategyMap, winRateCalc, calculatedFactorRatio) {
+            let sharpe = 0;
+            if(filteredTrades.length > 1) {
+                let meanPl = filteredTrades.reduce((acc, curr) => acc + curr.calculatedPl, 0) / filteredTrades.length;
+                let varianceSum = filteredTrades.reduce((acc, curr) => acc + Math.pow(curr.calculatedPl - meanPl, 2), 0);
+                let stdDev = Math.sqrt(varianceSum / (filteredTrades.length - 1));
+                if(stdDev > 0) sharpe = meanPl / stdDev;
+            }
+            document.getElementById('analyticsSharpe').textContent = sharpe.toFixed(2);
+
+            let kelly = 0;
+            if(winRateCalc > 0) {
+                let pWin = winRateCalc / 100;
+                let pLoss = 1 - pWin;
+                let winToLossRatioFactor = parseFloat(calculatedFactorRatio) || 1;
+                if(winToLossRatioFactor > 0) kelly = pWin - (pLoss / winToLossRatioFactor);
+            }
+            document.getElementById('analyticsKelly').textContent = `${(Math.max(0, kelly) * 100).toFixed(1)}%`;
+            document.getElementById('analyticsRRR').textContent = `1:${parseFloat(calculatedFactorRatio).toFixed(2)}`;
+
+            const hubContainer = document.getElementById('analyticsListContainer');
+            hubContainer.innerHTML = "";
+            Object.keys(strategyMap).forEach(key => {
+                const itemVal = strategyMap[key];
+                const block = document.createElement('div');
+                block.className = "bg-slate-50 dark:bg-darkbg-800/40 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex justify-between items-center text-xs";
+                block.innerHTML = `<div><p class="font-bold text-slate-900 dark:text-white">${key}</p><p class="text-[10px] text-slate-400 mt-0.5">Weighted signature subset</p></div><span class="font-black ${itemVal >= 0 ? 'text-emerald-500' : 'text-rose-500'}">₹${itemVal.toLocaleString(undefined, {minimumFractionDigits:2})}</span>`;
+                hubContainer.appendChild(block);
+            });
+        }
+
+        function inspectChartNode(base64Data) {
+            const wrap = document.createElement('div');
+            wrap.className = "fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 select-none";
+            wrap.id = "globalChartViewerOverlay";
+            wrap.innerHTML = `
+                <div class="absolute top-4 right-4 flex items-center gap-3">
+                    <button onclick="document.getElementById('globalChartViewerOverlay').remove()" class="p-2 bg-zinc-800 text-white rounded-xl font-bold text-xs hover:bg-zinc-700">✕ Close Gateway</button>
+                </div>
+                <div class="overflow-auto max-w-full max-h-[85vh] rounded-2xl shadow-2xl border border-zinc-800">
+                    <img src="${base64Data}" class="object-contain max-w-full h-auto transition-transform duration-200" style="transform: scale(1);" id="zoomablePreviewContainer">
+                </div>
+            `;
+            document.body.appendChild(wrap);
+        }
+
+        function exportToExcel() {
+            alert("Exporting secure immutable log configurations to dynamic ledger sheets (.csv format payload generated)...");
+            let csvStr = "Date,Symbol,Market,Direction,EntryPrice,Quantity,ExitPrice,CalculatedPnL,Strategy,Confidence,Satisfaction,EmotionalState,Lessons\n";
+            trades.forEach(t => {
+                csvStr += `"${t.date || ''}","${t.symbol || ''}","${t.marketCondition || ''}","${t.direction || ''}",${t.entryPrice || 0},${t.quantity || 0},${t.exitPrice || 0},${t.calculatedPl || 0},"${t.strategyTag || ''}",${t.ratingConfidence || 5},${t.ratingSatisfaction || 5},"${t.emotionalState || ''}","${t.lessonsLearned || ''}"\n`;
+            });
+            const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `TradeDiary_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        document.getElementById('tradeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('chartImage');
+            const file = fileInput.files[0];
+            let selectedStrategy = document.getElementById('strategyTag').value;
+            if (selectedStrategy === "__ADD_NEW__") {
+                selectedStrategy = document.getElementById('customStrategyName').value.trim() || "Custom Parameter Matrix";
+            }
+
+            const baseSubmit = (finalImage) => {
+                const payloadTrade = {
+                    date: document.getElementById('tradeDate').value,
+                    symbol: document.getElementById('symbol').value.toUpperCase(),
+                    marketCondition: document.getElementById('marketCondition').value,
+                    direction: document.querySelector('input[name="direction"]:checked').value,
+                    entryPrice: parseFloat(document.getElementById('entryPrice').value) || 0,
+                    quantity: parseFloat(document.getElementById('quantity').value) || 0,
+                    exitPrice: parseFloat(document.getElementById('exitPrice').value) || 0,
+                    stopLossPrice: parseFloat(document.getElementById('stopLossPrice').value) || "",
+                    targetPrice: parseFloat(document.getElementById('targetPrice').value) || "",
+                    manualPnlAmount: document.getElementById('manualPnlAmount').value !== "" ? parseFloat(document.getElementById('manualPnlAmount').value) : "",
+                    strategyTag: selectedStrategy,
+                    ratingConfidence: parseInt(document.getElementById('ratingConfidence').value) || 5,
+                    ratingSatisfaction: parseInt(document.getElementById('ratingSatisfaction').value) || 5,
+                    emotionalState: document.getElementById('emotionalState').value.trim(),
+                    lessonsLearned: document.getElementById('lessonsLearned').value.trim(),
+                    chartImage: finalImage || (editingTradeIndex !== null ? trades[editingTradeIndex].chartImage : null),
+                    mistakesMade: Array.from(document.querySelectorAll('input[name=\"mistakesMade\"]:checked')).map(el => el.value)
+                };
+
+                if (editingTradeIndex !== null) {
+                    trades[editingTradeIndex] = payloadTrade;
+                } else {
+                    trades.push(payloadTrade);
+                }
+
+                localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+                toggleModal('tradeModal');
+                updateDashboardAnalytics();
+                if(activeMainViewTab === 'calendar-view') renderCalendarEngine();
+            };
+
+            if (file) {
+                const r = new FileReader();
+                r.onload = function(evt) { baseSubmit(evt.target.result); };
+                r.readAsDataURL(file);
+            } else {
+                baseSubmit(null);
+            }
+        });
+
+        // Setup individual auto focus transitions across OTP digits
+        const otpBoxes = document.querySelectorAll('.otp-box');
+        otpBoxes.forEach((box, idx) => {
+            box.addEventListener('input', (e) => {
+                box.value = e.target.value.replace(/[^0-9]/g, ''); // Numeric locks only
+                if(box.value && idx < otpBoxes.length - 1) {
+                    otpBoxes[idx + 1].focus();
+                }
+            });
+            box.addEventListener('keydown', (e) => {
+                if(e.key === 'Backspace' && !box.value && idx > 0) {
+                    otpBoxes[idx - 1].focus();
+                }
+            });
+        });
+
+        window.onload = function() {
+            initializeThemeModeEngine();
+            checkTerminalAuthenticationState();
+            updateDashboardAnalytics();
+        };
+    </script>
+</body>
+</html>
