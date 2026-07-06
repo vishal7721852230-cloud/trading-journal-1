@@ -58,7 +58,7 @@
             border: 1px solid rgba(255, 255, 255, 0.05); 
         }
         .dark .glass-header {
-            background: rgba(2, 6, 23, 0.75);
+            background: rgba(3, 7, 23, 1.75);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         
@@ -100,12 +100,12 @@
             <button onclick="clearAllData()" class="text-rose-500 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/10 px-3 py-2 rounded-xl text-xs font-semibold transition border border-transparent hover:border-rose-300 dark:hover:border-rose-500/30 flex items-center gap-1.5" title="Clear All Data">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>
-            <button onclick="exportToExcel()" class="bg-emerald-100 dark:bg-emerald-600/20 hover:bg-emerald-200 dark:hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-2 backdrop-blur-sm">
+            <button onclick="exportToPDF()" class="bg-emerald-100 dark:bg-emerald-600/20 hover:bg-emerald-200 dark:hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-2 backdrop-blur-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Export
             </button>
             <button onclick="openNewTradeModal()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-5 py-2 rounded-xl text-sm font-bold transition shadow-lg shadow-indigo-600/25 flex items-center gap-2">
-                <span>+</span> Deep Entry
+                <span>+</span> Entry
             </button>
         </div>
     </nav>
@@ -258,7 +258,7 @@
                             <tr class="bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest shadow-sm">
                                 <th class="px-6 py-4">Asset</th>
                                 <th class="px-6 py-4">Direction</th>
-                                <th class="px-6 py-4">Env / Strategy</th>
+                                <th class="px-6 py-4">Strategy</th>
                                 <th class="px-6 py-4">Risk Matrix</th>
                                 <th class="px-6 py-4">Attachment</th>
                                 <th class="px-6 py-4">Psychology</th>
@@ -282,9 +282,9 @@
                     <select id="calMarketFilter" onchange="renderCalendarEngine()" class="bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer backdrop-blur-md">
                         <option value="ALL">All Environments</option>
                         <option value="Indian">Indian Market</option>
-                        <option value="Crypto">Crypto Space</option>
-                        <option value="Forex">Forex FX</option>
-                        <option value="US Equity">US Equity</option>
+                        <option value="Crypto">Crypto</option>
+                        <option value="Forex">Forex</option>
+                        <option value="US Equity">Equity</option>
                     </select>
                     <select id="calMonthFilter" onchange="renderCalendarEngine()" class="bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer backdrop-blur-md"></select>
                     <select id="calYearFilter" onchange="renderCalendarEngine()" class="bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer backdrop-blur-md"></select>
@@ -514,7 +514,7 @@
                                 <option value="Indian">Indian Market</option>
                                 <option value="Crypto">Crypto Space</option>
                                 <option value="Forex">Forex</option>
-                                <option value="US Equity">US Equity</option>
+                                <option value="US Equity">Equity</option>
                             </select>
                         </div>
                     </div>
@@ -706,6 +706,7 @@
         let mistakeChartInstance = null;
         let winLossDistributionChartInstance = null;
         let strategyPnlDistributionChartInstance = null;
+        let highmistakeChartInstance = null;
         let sentimentGaugeInstance = null; 
 
         // Theme System Setup
@@ -801,6 +802,7 @@
                 date: new Date().toISOString().split('T')[0],
                 symbol: symbol,
                 marketCondition: "Unassigned",
+                currency: ₹n$ >= 0 ? "Rupee" : "Dollar",
                 entryPrice: 0,
                 quantity: 1, 
                 exitPrice: 0,
@@ -814,6 +816,8 @@
                 tradeStatus: pnl >= 0 ? "WIN" : "LOSS",
                 ratingConfidence: 5,
                 ratingSatisfaction: 5,
+                Entryreason: "",
+                Exitreason: "",
                 emotionalState: "",
                 lessonsLearned: "",
                 mistakesMade: [],
@@ -932,6 +936,7 @@
             document.getElementById('tradeDate').value = t.date || "";
             document.getElementById('symbol').value = t.symbol || "";
             document.getElementById('marketCondition').value = t.marketCondition || "Indian";
+            document.getElementById('currency').value = t.currency || "₹";
             document.getElementById('entryPrice').value = t.entryPrice || "";
             document.getElementById('quantity').value = t.quantity || "";
             document.getElementById('exitPrice').value = t.exitPrice || "";
@@ -939,6 +944,8 @@
             document.getElementById('targetPrice').value = t.targetPrice || "";
             document.getElementById('manualPnlAmount').value = t.manualPnlAmount || "";
             document.getElementById('tradeStatus').value = t.tradeStatus || "WIN";
+            document.getElementById('entryreason').value = t.entryreason || "";
+            document.getElementById('exitreason').value = t.exitreason || "";
             document.getElementById('emotionalState').value = t.emotionalState || "";
             document.getElementById('lessonsLearned').value = t.lessonsLearned || "";
 
@@ -1188,6 +1195,7 @@
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.direction || 'LONG'}</Data></Cell>
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.tradeStatus || 'WIN'}</Data></Cell>
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.manualPnlAmount || 0}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.currency || '₹'}</Data></Cell>
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.entryPrice}</Data></Cell>
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.exitPrice}</Data></Cell>
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.quantity}</Data></Cell>
@@ -1198,6 +1206,8 @@
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.strategyTag || 'None'}</Data></Cell>
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.ratingConfidence || 5}</Data></Cell>
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.ratingSatisfaction || 5}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.entryreason || 'N/A'}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.exitreason || 'N/A'}</Data></Cell>
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.emotionalState || 'N/A'}</Data></Cell>
                 <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.lessonsLearned || 'N/A'}</Data></Cell>
             </Row>`;
