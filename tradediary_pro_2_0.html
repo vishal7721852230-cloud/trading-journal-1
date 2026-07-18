@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeDiary Pro 2.0 - Enterprise Ledger & Analytics Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            750: '#262f41',
+                            850: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617'
+                        },
+                        primary: 'var(--color-primary, #4f46e5)',
+                        primaryHover: 'var(--color-primary-hover, #6366f1)',
+                    },
+                    fontFamily: {
+                        sans: ['var(--font-family)', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(15px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style id="dynamic-styles">
+        :root {
+            --color-primary: #4f46e5;
+            --color-primary-hover: #6366f1;
+            --font-family: "Plus Jakarta Sans";
+        }
+        
+        /* Base Styling & Background Mesh */
+        body {
+            color: #0f172a;
+            background-color: var(--bg-light, #f8fafc);
+            background-image: var(--bg-mesh-light, radial-gradient(at 0% 0%, rgba(241, 245, 249, 1) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(224, 231, 255, 0.8) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(253, 244, 255, 0.8) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(241, 245, 249, 1) 0px, transparent 50%));
+            background-attachment: fixed;
+            position: relative;
+            z-index: 0;
+            font-family: var(--font-family), system-ui, sans-serif;
+        }
+
+        .dark body {
+            color: #f1f5f9;
+            background-color: var(--bg-dark, #020617);
+            background-image: var(--bg-mesh-dark, radial-gradient(at 0% 0%, rgba(15, 23, 42, 1) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(49, 46, 129, 0.4) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(15, 23, 42, 1) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(30, 27, 75, 0.4) 0px, transparent 50%));
+            background-attachment: fixed;
+        }
+
+        /* Dot Matrix Overlay */
+        body.bg-mesh-active::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .dark body.bg-mesh-active::before {
+            background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+        }
+
+        /* Premium Glassmorphism */
+        .glass-panel { 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.5));
+            backdrop-filter: blur(24px); 
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+        
+        .glass-header {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+        }
+
+        .dark .glass-panel { 
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.4));
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+        
+        .dark .glass-header {
+            background: linear-gradient(180deg, rgba(2, 6, 23, 0.85), rgba(2, 6, 23, 0.6));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(203, 213, 225, 0.8); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.8); }
+        .dark ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); }
+        .dark ::-webkit-scrollbar-thumb:hover { background: rgba(71, 85, 105, 0.8); }
+
+        /* Dynamic Customization Classes */
+        .bg-primary { background-color: var(--color-primary); }
+        .text-primary { color: var(--color-primary); }
+        .border-primary { border-color: var(--color-primary); }
+        .hover\:bg-primary-hover:hover { background-color: var(--color-primary-hover); }
+        .hover\:text-primary-hover:hover { color: var(--color-primary-hover); }
+        .focus\:ring-primary:focus { --tw-ring-color: var(--color-primary); box-shadow: 0 0 0 2px var(--tw-ring-color); }
+        .focus\:border-primary:focus { border-color: var(--color-primary); }
+    </style>
+</head>
+<body class="text-slate-800 dark:text-slate-200 antialiased transition-colors duration-300 min-h-screen bg-mesh-active">
+
+    <nav class="sticky top-0 z-40 glass-header px-6 py-4 flex flex-wrap justify-between items-center gap-4 transition-all duration-300">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3 group">
+                <div class="bg-primary p-2 rounded-xl text-white font-bold tracking-wider text-sm shadow-lg transform transition duration-300 group-hover:rotate-12 group-hover:scale-110 cursor-pointer">TD</div>
+                <h1 class="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">
+                    Trade<span class="text-primary">Diary</span> Pro 2.0
+                </h1>
+            </div>
+            
+            <button onclick="toggleThemeModeEngine()" class="p-2 rounded-xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 transition duration-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-primary dark:text-yellow-400 shadow-sm backdrop-blur-sm" title="Toggle Theme">
+                <i data-lucide="sun" id="theme-sun-icon" class="w-4 h-4 hidden"></i>
+                <i data-lucide="moon" id="theme-moon-icon" class="w-4 h-4 hidden"></i>
+            </button>
+        </div>
+        
+        <div class="flex bg-slate-200/50 dark:bg-slate-900/50 p-1.5 rounded-xl border border-white/50 dark:border-slate-800/50 flex-wrap backdrop-blur-sm gap-1 shadow-inner">
+            <button onclick="switchTab('dashboard-view')" id="btn-dashboard-view" class="px-4 py-1.5 rounded-lg text-sm font-semibold tracking-tight transition duration-300 bg-primary text-white shadow-md">Dashboard</button>
+            <button onclick="switchTab('calendar-view')" id="btn-calendar-view" class="px-4 py-1.5 rounded-lg text-sm font-semibold tracking-tight transition duration-300 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Calendar</button>
+            <button onclick="switchTab('portfolio-view')" id="btn-portfolio-view" class="px-4 py-1.5 rounded-lg text-sm font-semibold tracking-tight transition duration-300 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Portfolio</button>
+            <button onclick="switchTab('pnl-view')" id="btn-pnl-view" class="px-4 py-1.5 rounded-lg text-sm font-semibold tracking-tight transition duration-300 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">P&L Report</button>
+            <button onclick="switchTab('analytics-hub-view')" id="btn-analytics-hub-view" class="px-4 py-1.5 rounded-lg text-sm font-semibold tracking-tight transition duration-300 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Analytics Hub</button>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button onclick="openCustomizationModal()" class="text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 px-3 py-2 rounded-xl text-xs font-bold tracking-tight transition duration-300 border border-transparent flex items-center gap-1.5" title="Customization Settings">
+                <i data-lucide="settings" class="w-4 h-4"></i> Customization
+            </button>
+            <button onclick="clearAllData()" class="text-rose-500 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 px-3 py-2 rounded-xl text-xs font-bold tracking-tight transition duration-300 border border-transparent hover:border-rose-300 dark:hover:border-rose-500/40 flex items-center gap-1.5" title="Clear All Data">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+            <button onclick="exportToExcel()" class="bg-emerald-50 dark:bg-emerald-600/10 hover:bg-emerald-100 dark:hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 px-4 py-2 rounded-xl text-sm font-bold tracking-tight transition duration-300 flex items-center gap-2 backdrop-blur-sm shadow-sm">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export
+            </button>
+            <button onclick="openNewTradeModal()" class="bg-primary hover:bg-primary-hover text-white px-5 py-2 rounded-xl text-sm font-bold tracking-tight transition duration-300 shadow-lg shadow-indigo-600/25 flex items-center gap-2 hover:-translate-y-0.5">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Deep Entry Log
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 lg:p-8 space-y-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+            <div class="glass-panel rounded-2xl p-6 relative flex flex-col justify-between min-h-[145px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-5px_rgba(16,185,129,0.3)] hover:border-emerald-500/30 group">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Net P&L Balance</p>
+                        <p id="totalPl" class="text-2xl font-black font-mono mt-2 text-emerald-500 dark:text-emerald-400">₹0.00</p>
+                    </div>
+                    <div class="bg-emerald-100 dark:bg-emerald-500/10 p-2.5 rounded-xl text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs font-semibold text-emerald-500 dark:text-emerald-400 tracking-tight">+Active <span class="text-slate-500 font-medium">ledger tracking</span></p>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6 relative flex flex-col justify-between min-h-[145px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-5px_rgba(99,102,241,0.3)] hover:border-primary/30 group">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Win Rate</p>
+                        <p id="winRate" class="text-2xl font-black font-mono mt-2 text-primary">0%</p>
+                    </div>
+                    <div class="bg-primary/10 p-2.5 rounded-xl text-primary group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="target" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <div class="mt-4 w-full bg-slate-200 dark:bg-slate-800/50 h-1.5 rounded-full overflow-hidden">
+                    <div id="winRateBar" class="bg-primary h-full w-0 rounded-full transition-all duration-1000 ease-out"></div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6 relative flex flex-col justify-between min-h-[145px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-5px_rgba(168,85,247,0.3)] hover:border-purple-500/30 group">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Risk/Reward</p>
+                        <p id="profitFactorGlobal" class="text-2xl font-black font-mono mt-2 text-purple-500 dark:text-purple-400">1:0.00</p>
+                    </div>
+                    <div class="bg-purple-100 dark:bg-purple-500/10 p-2.5 rounded-xl text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="activity" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-tight">Global Average Return Profile</p>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6 relative flex flex-col justify-between min-h-[145px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-5px_rgba(245,158,11,0.3)] hover:border-amber-500/30 group">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Total Trades</p>
+                        <p id="allocatedCapital" class="text-2xl font-black font-mono mt-2 text-amber-500 dark:text-amber-400">0</p>
+                    </div>
+                    <div class="bg-amber-100 dark:bg-amber-500/10 p-2.5 rounded-xl text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-tight">Historical Volume</p>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6 relative flex flex-col justify-center min-h-[145px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-5px_var(--color-primary-hover)] hover:border-primary/30 text-center group">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">My Market Sentiment</p>
+                <div class="relative h-16 w-full flex items-center justify-center">
+                    <canvas id="sentimentGaugeChart"></canvas>
+                    <div class="absolute inset-0 flex items-end justify-center pb-2">
+                        <span id="sentimentLabel" class="text-xs font-bold text-emerald-500 dark:text-emerald-400 tracking-wider">BULLISH</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard-view" class="tab-content animate-fade-in space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between min-h-[360px] transition-all duration-300">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase mb-4">Win/Loss Distribution</h3>
+                    <div class="relative h-56 flex items-center justify-center my-2">
+                        <canvas id="winLossDistributionChart"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                            <span id="centerWinRateDisplay" class="text-3xl font-black font-mono text-slate-900 dark:text-white drop-shadow-md">0.00%</span>
+                            <span class="text-[10px] font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase mt-1">Win Rate</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-center items-center gap-12 border-t border-slate-200/50 dark:border-slate-800/50 pt-5 mt-2">
+                        <div class="text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                                <span id="winningTradesText" class="text-xl font-black font-mono text-slate-900 dark:text-white">0</span>
+                            </div>
+                            <span class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Wins</span>
+                        </div>
+                        <div class="border-l border-slate-300/50 dark:border-slate-700/50 h-8"></div>
+                        <div class="text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"></span>
+                                <span id="losingTradesText" class="text-xl font-black font-mono text-slate-900 dark:text-white">0</span>
+                            </div>
+                            <span class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Losses</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between min-h-[360px] transition-all duration-300">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase">Strategy vs P&L</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-tight mt-1">Performance outcome weighted across custom parameters</p>
+                    </div>
+                    <div class="h-64 mt-4">
+                        <canvas id="strategyPnlDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-panel rounded-2xl p-6 transition-all duration-300">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase mb-4">Equity Curve</h3>
+                    <div class="h-64"><canvas id="equityChart"></canvas></div>
+                </div>
+                <div class="glass-panel rounded-2xl p-6 transition-all duration-300">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase mb-4">Growth Streak</h3>
+                    <div class="h-64"><canvas id="growthChart"></canvas></div>
+                </div>
+                <div class="glass-panel rounded-2xl p-6 transition-all duration-300">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase">Mistake Matrix</h3>
+                    </div>
+                    <div class="h-64"><canvas id="mistakeChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
+                <div class="px-6 py-4 border-b border-white/20 dark:border-slate-800/50 bg-white/40 dark:bg-slate-900/40 flex justify-between items-center backdrop-blur-md">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase">Historical Transaction Logs</h3>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="logSearchInput" oninput="filterTransactionLogs()" placeholder="Search Ticker..." class="bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 text-slate-900 dark:text-white text-xs rounded-lg focus-visible:ring-primary focus-visible:border-primary block w-full pl-9 p-2 transition-all outline-none backdrop-blur-sm">
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-[500px] overflow-y-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse relative">
+                        <thead class="sticky top-0 z-10">
+                            <tr class="bg-slate-100/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest shadow-sm">
+                                <th class="px-6 py-4">Asset</th>
+                                <th class="px-6 py-4">Direction</th>
+                                <th class="px-6 py-4">Env / Strategy</th>
+                                <th class="px-6 py-4">Risk Matrix</th>
+                                <th class="px-6 py-4">Attachment</th>
+                                <th class="px-6 py-4">Psychology</th>
+                                <th class="px-6 py-4">Net P&L</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeTableBody" class="divide-y divide-slate-200/50 dark:divide-slate-800/50 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="calendar-view" class="tab-content hidden animate-fade-in space-y-6">
+            <div class="glass-panel flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl transition-all duration-300">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase">Performance Calendar</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium tracking-tight">Dynamic daily strategy outcome log</p>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <select id="calMarketFilter" onchange="renderCalendarEngine()" class="bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white font-medium focus:outline-none focus:border-primary cursor-pointer backdrop-blur-md transition-colors">
+                        <option value="ALL">All Environments</option>
+                    </select>
+                    <select id="calMonthFilter" onchange="renderCalendarEngine()" class="bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white font-medium focus:outline-none focus:border-primary cursor-pointer backdrop-blur-md transition-colors"></select>
+                    <select id="calYearFilter" onchange="renderCalendarEngine()" class="bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white font-medium focus:outline-none focus:border-primary cursor-pointer backdrop-blur-md transition-colors"></select>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6 space-y-4 transition-all duration-300">
+                <div class="grid grid-cols-7 text-center font-bold text-[11px] tracking-widest uppercase text-slate-500 pb-4 border-b border-slate-200/50 dark:border-slate-800/50">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div id="calendarGridBody" class="grid grid-cols-7 gap-3 font-sans"></div>
+            </div>
+        </div>
+
+        <div id="portfolio-view" class="tab-content hidden animate-fade-in space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 glass-panel rounded-2xl overflow-hidden flex flex-col transition-all duration-300">
+                    <div class="px-6 py-4 border-b border-white/20 dark:border-slate-800/50 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase">Aggregated Live Assets</h3>
+                    </div>
+                    <div class="overflow-x-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100/50 dark:bg-slate-900/50 border-b border-slate-200/50 dark:border-slate-800/50 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                                    <th class="px-6 py-4">Asset Symbol</th>
+                                    <th class="px-6 py-4">Total Volume</th>
+                                    <th class="px-6 py-4">Trades Run</th>
+                                    <th class="px-6 py-4">Net Returns</th>
+                                    <th class="px-6 py-4">Allocation Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolioTableBody" class="divide-y divide-slate-200/50 dark:divide-slate-800/50 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between transition-all duration-300">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase">Asset Allocation</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 mt-1 font-medium tracking-tight">Capital concentration map</p>
+                    </div>
+                    <div class="h-64 relative flex items-center justify-center"><canvas id="allocationChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pnl-view" class="tab-content hidden animate-fade-in space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-panel rounded-2xl p-6 transition-all duration-300">
+                    <h4 class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-4">Profit Breakdown</h4>
+                    <div class="space-y-3 font-medium">
+                        <div class="flex justify-between text-sm"><span class="text-slate-600 dark:text-slate-300">Gross Wins:</span> <span id="grossWins" class="font-mono text-emerald-500 dark:text-emerald-400 font-bold tracking-wide">₹0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-slate-600 dark:text-slate-300">Avg Winning Trade:</span> <span id="avgWin" class="font-mono text-emerald-500/90 dark:text-emerald-400/90 tracking-wide">₹0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-slate-600 dark:text-slate-300">Max Win Streak:</span> <span id="maxWinStreak" class="font-mono text-slate-900 dark:text-white">0</span></div>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-2xl p-6 transition-all duration-300">
+                    <h4 class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-4">Loss Breakdown</h4>
+                    <div class="space-y-3 font-medium">
+                        <div class="flex justify-between text-sm"><span class="text-slate-600 dark:text-slate-300">Gross Losses:</span> <span id="grossLosses" class="font-mono text-rose-500 dark:text-rose-400 font-bold tracking-wide">₹0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-slate-600 dark:text-slate-300">Avg Losing Trade:</span> <span id="avgLoss" class="font-mono text-rose-500/90 dark:text-rose-400/90 tracking-wide">₹0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-slate-600 dark:text-slate-300">Max Loss Streak:</span> <span id="maxLossStreak" class="font-mono text-slate-900 dark:text-white">0</span></div>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-2xl p-6 border-primary/20 transition-all duration-300 shadow-[inset_0_0_20px_var(--color-primary-hover)]">
+                    <h4 class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-4">Efficiency Metrics</h4>
+                    <div class="space-y-3 font-medium">
+                        <div class="flex justify-between text-sm"><span class="text-slate-600 dark:text-slate-300">Total Count:</span> <span id="reportTotalTrades" class="font-mono text-slate-900 dark:text-white">0</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-slate-600 dark:text-slate-300">Win/Loss Ratio:</span> <span id="winLossRatio" class="font-mono text-primary">0.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-slate-600 dark:text-slate-300">Expectancy:</span> <span id="expectancy" class="font-mono text-amber-500 dark:text-amber-400 font-bold tracking-wide">₹0.00</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-panel rounded-2xl p-6 transition-all duration-300">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase mb-4">P&L by Asset</h3>
+                    <div class="h-64"><canvas id="pnlBarChart"></canvas></div>
+                </div>
+                <div class="glass-panel rounded-2xl p-6 flex flex-col transition-all duration-300">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase mb-4">Monthly Time Distribution</h3>
+                    <div class="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar flex-1 font-medium" id="timeDistributionContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="analytics-hub-view" class="tab-content hidden animate-fade-in space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="lg:col-span-1 glass-panel rounded-2xl p-6 space-y-6 transition-all duration-300">
+                    <div>
+                        <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">Journal Filters</h3>
+                        <select id="analyticsStrategyFilter" onchange="updateDashboardAnalytics()" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 text-sm text-slate-900 dark:text-white font-medium focus:outline-none focus:border-primary backdrop-blur-md transition-colors">
+                            <option value="ALL">All Strategies</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">Math Ratios</h3>
+                        <div class="space-y-2 text-sm font-medium">
+                            <div class="flex justify-between bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl border border-white/50 dark:border-slate-800/50 backdrop-blur-sm" title="Estimated Sharpe Ratio based on trade-by-trade outcomes variance">
+                                <span class="text-slate-500 dark:text-slate-400 text-xs">Sharpe Estimate:</span>
+                                <span id="analyticsSharpe" class="font-mono font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl border border-white/50 dark:border-slate-800/50 backdrop-blur-sm" title="Suggested optimal risk allowance per trade scenario">
+                                <span class="text-slate-500 dark:text-slate-400 text-xs">Kelly % Factor:</span>
+                                <span id="analyticsKelly" class="font-mono font-bold text-purple-500 dark:text-purple-400">0.00%</span>
+                            </div>
+                            <div class="flex justify-between bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl border border-white/50 dark:border-slate-800/50 backdrop-blur-sm">
+                                <span class="text-slate-500 dark:text-slate-400 text-xs">Max Drawdown:</span>
+                                <span id="analyticsDrawdown" class="font-mono font-bold text-rose-500 dark:text-rose-400">₹0.00</span>
+                            </div>
+                            <div class="flex justify-between bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl border border-white/50 dark:border-slate-800/50 backdrop-blur-sm">
+                                <span class="text-slate-500 dark:text-slate-400 text-xs">Avg R:R:</span>
+                                <span id="analyticsRRR" class="font-mono font-bold text-emerald-500 dark:text-emerald-400">1:0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 glass-panel rounded-2xl p-6 flex flex-col justify-between transition-all duration-300">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-widest uppercase">Strategy Alpha</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 mt-1 font-medium tracking-tight">Tracking performance returns distribution mapping grouped by setup parameters</p>
+                    </div>
+                    <div class="h-[300px]"><canvas id="analyticsStrategyChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-panel rounded-2xl p-6 transition-all duration-300">
+                    <h4 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200/50 dark:border-slate-800/50 pb-3 mb-4">Day-of-Week Profile</h4>
+                    <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar font-medium" id="analyticsWeekdayContainer"></div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 transition-all duration-300">
+                    <h4 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200/50 dark:border-slate-800/50 pb-3 mb-4">Holding & Sizing Matrix</h4>
+                    <div class="space-y-3 text-sm font-medium">
+                        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl border border-white/50 dark:border-slate-800/50 backdrop-blur-sm">
+                            <span class="text-slate-500 dark:text-slate-400 text-xs">Max Single Profit:</span>
+                            <span id="analyticsMaxWin" class="font-mono font-bold text-emerald-500 dark:text-emerald-400 tracking-wide">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl border border-white/50 dark:border-slate-800/50 backdrop-blur-sm">
+                            <span class="text-slate-500 dark:text-slate-400 text-xs">Max Single Loss:</span>
+                            <span id="analyticsMaxLoss" class="font-mono font-bold text-rose-500 dark:text-rose-400 tracking-wide">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl border border-white/50 dark:border-slate-800/50 backdrop-blur-sm">
+                            <span class="text-slate-500 dark:text-slate-400 text-xs">Avg Position Cost:</span>
+                            <span id="analyticsAvgSize" class="font-mono font-bold text-purple-500 dark:text-purple-400 tracking-wide">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl border border-white/50 dark:border-slate-800/50 backdrop-blur-sm">
+                            <span class="text-slate-500 dark:text-slate-400 text-xs">Total Position Units:</span>
+                            <span id="analyticsTotalVolume" class="font-mono text-slate-900 dark:text-white font-bold tracking-wide">0.00 Units</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 transition-all duration-300">
+                    <h4 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200/50 dark:border-slate-800/50 pb-3 mb-4">Strategy Matrix</h4>
+                    <div class="space-y-2 overflow-y-auto max-h-60 custom-scrollbar font-medium" id="analyticsStrategyBreakdownContainer"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <button onclick="openQuickAddModal()" class="fixed bottom-8 right-8 bg-primary hover:bg-primary-hover p-4 rounded-full shadow-lg transition-transform hover:scale-110 z-50 flex items-center justify-center border border-white/20 group backdrop-blur-md text-white">
+        <i data-lucide="plus" class="w-8 h-8 group-hover:rotate-90 transition-transform duration-300"></i>
+    </button>
+
+    <div id="quickAddModal" class="hidden fixed inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[70] p-4 transition-all">
+        <div class="glass-panel w-full max-w-sm rounded-3xl p-8 shadow-2xl relative border-white/40 dark:border-slate-700/50 transform scale-100 transition-all animate-fade-in">
+            <button onclick="toggleModal('quickAddModal')" class="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition duration-300">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white mb-1">Quick Execution</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 font-medium">Log a rapid trade entry instantly.</p>
+            
+            <form id="quickAddForm" onsubmit="submitQuickAdd(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Symbol / Asset</label>
+                    <input type="text" id="qaSymbol" placeholder="e.g. BTCUSDT" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-semibold text-slate-900 dark:text-white uppercase focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none transition-all backdrop-blur-md" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Net P&L Balance</label>
+                        <input type="number" step="any" id="qaPnl" placeholder="0.00" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-mono font-semibold text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none transition-all backdrop-blur-md" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Direction</label>
+                        <select id="qaDirection" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-semibold text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none transition-all cursor-pointer backdrop-blur-md">
+                            <option value="LONG">LONG</option>
+                            <option value="SHORT">SHORT</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white font-bold tracking-tight py-3.5 rounded-xl shadow-lg transition-all duration-300 mt-2 hover:-translate-y-0.5">Log Fast Trade</button>
+                <button type="button" onclick="toggleModal('quickAddModal'); openNewTradeModal();" class="w-full text-xs text-primary font-bold py-2 mt-1 transition-colors">Open Detailed Form Instead →</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="tradeModal" class="hidden fixed inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[60] p-4 overflow-y-auto transition-all">
+        <div class="glass-panel w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden my-8 border-white/40 dark:border-slate-700/50 animate-fade-in">
+            <div class="flex justify-between items-center px-6 py-5 border-b border-white/30 dark:border-slate-800/60 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md">
+                <h3 id="modalTitleDisplay" class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Deep Entry Ledger</h3>
+                <button onclick="toggleModal('tradeModal')" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition duration-300 p-1 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="flex px-6 pt-3 space-x-6 border-b border-white/30 dark:border-slate-800/60 text-sm bg-white/20 dark:bg-slate-900/20 backdrop-blur-sm">
+                <button type="button" onclick="switchModalSubTab('modal-general-segment')" id="modal-tab-general" class="pb-3 border-b-2 border-primary text-slate-900 dark:text-white font-bold tracking-tight flex items-center gap-2 transition duration-300">General Metadata</button>
+                <button type="button" onclick="switchModalSubTab('modal-psychology-segment')" id="modal-tab-psychology" class="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-semibold tracking-tight flex items-center gap-2 transition duration-300">Psychology Matrix</button>
+            </div>
+
+            <form id="tradeForm" onsubmit="saveTradingJournal(event)" class="p-6 space-y-6">
+                <div id="modal-general-segment" class="modal-sub-content space-y-6 animate-fade-in">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-5">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Date <span class="text-rose-500">*</span></label>
+                            <input type="date" id="tradeDate" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Time <span class="text-rose-500">*</span></label>
+                            <input type="time" id="tradeTime" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Ticker <span class="text-rose-500">*</span></label>
+                            <input type="text" id="symbol" placeholder="e.g. RELIANCE" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-bold text-slate-900 dark:text-white uppercase focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Ecosystem</label>
+                            <select id="marketCondition" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all backdrop-blur-md"></select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Currency</label>
+                            <select id="currency" onchange="calculateLiveRiskProfile();" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all backdrop-blur-md">
+                                <option value="INR">Rupee (INR)</option>
+                                <option value="USD">Dollar (USD)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Entry Price <span class="text-rose-500">*</span></label>
+                            <input type="number" step="any" id="entryPrice" oninput="calculateLiveRiskProfile(); updatePhotoLayoutCalculations();" placeholder="0.00" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-mono font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md" required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Qty <span class="text-rose-500">*</span></label>
+                                <input type="number" step="any" id="quantity" oninput="calculateLiveRiskProfile(); updatePhotoLayoutCalculations();" placeholder="0" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-mono font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md" required>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Total Base</label>
+                                <input type="text" id="totalAmountDisplay" readonly value="0.00" class="w-full bg-white/30 dark:bg-slate-900/40 border border-white/50 dark:border-slate-800/70 rounded-xl p-3 text-slate-600 dark:text-slate-400 font-mono font-bold outline-none backdrop-blur-md">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Exit Price <span class="text-rose-500">*</span></label>
+                            <input type="number" step="any" id="exitPrice" oninput="updatePhotoLayoutCalculations();" placeholder="0.00" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-mono font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Stop Loss <span class="text-rose-500">*</span></label>
+                                <input type="number" step="any" id="stopLossPrice" oninput="calculateLiveRiskProfile();" placeholder="0.00" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-mono font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md" required>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Take Profit <span class="text-rose-500">*</span></label>
+                                <input type="number" step="any" id="targetPrice" oninput="calculateLiveRiskProfile();" placeholder="0.00" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-mono font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Setup Tag</label>
+                            <select id="strategyTag" onchange="handleStrategySelection()" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all backdrop-blur-md"></select>
+                            <div id="newStrategyInputGroup" class="hidden mt-2">
+                                <input type="text" id="customStrategyName" placeholder="Custom setup" class="w-full bg-white/70 dark:bg-slate-900/70 border border-primary/50 rounded-xl p-3 font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Manual P&L Override</label>
+                            <input type="number" step="any" id="manualPnlAmount" placeholder="Auto-computed if empty" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-mono font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="bg-white/40 dark:bg-slate-900/40 p-4 rounded-xl border border-white/50 dark:border-slate-700/50 flex flex-col justify-between backdrop-blur-md">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Direction Vector</span>
+                            <div class="flex gap-4 mt-3">
+                                <label class="flex items-center gap-2 cursor-pointer select-none text-sm font-bold text-slate-800 dark:text-white">
+                                    <input type="radio" name="direction" id="dir-long" value="LONG" checked onchange="calculateLiveRiskProfile();" class="accent-indigo-500 w-4 h-4" style="accent-color: var(--color-primary)"> LONG
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer select-none text-sm font-bold text-slate-800 dark:text-white">
+                                    <input type="radio" name="direction" id="dir-short" value="SHORT" onchange="calculateLiveRiskProfile();" class="accent-indigo-500 w-4 h-4" style="accent-color: var(--color-primary)"> SHORT
+                                </label>
+                            </div>
+                        </div>
+                        <div class="bg-white/40 dark:bg-slate-900/40 p-4 rounded-xl border border-white/50 dark:border-slate-700/50 flex flex-col justify-between backdrop-blur-md">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Horizon</span>
+                            <div class="flex gap-4 mt-3">
+                                <label class="flex items-center gap-2 cursor-pointer select-none text-sm font-bold text-slate-800 dark:text-white">
+                                    <input type="radio" name="tradeDuration" id="dur-intraday" value="INTRADAY" checked class="accent-indigo-500 w-4 h-4" style="accent-color: var(--color-primary)"> Intraday
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer select-none text-sm font-bold text-slate-800 dark:text-white">
+                                    <input type="radio" name="tradeDuration" id="dur-swing" value="SWING" class="accent-indigo-500 w-4 h-4" style="accent-color: var(--color-primary)"> Swing
+                                </label>
+                            </div>
+                        </div>
+                        <div class="bg-white/50 dark:bg-slate-900/60 p-4 rounded-xl border border-white/60 dark:border-slate-700/60 space-y-2 font-mono text-xs relative overflow-hidden group backdrop-blur-lg shadow-inner">
+                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none"></div>
+                            <div class="flex justify-between relative z-10"><span class="text-slate-500 dark:text-slate-400 font-bold">Live Risk:</span> <span id="liveRiskAmount" class="text-rose-500 dark:text-rose-400 font-bold">₹0.00</span></div>
+                            <div class="flex justify-between relative z-10"><span class="text-slate-500 dark:text-slate-400 font-bold">Live Reward:</span> <span id="liveRewardAmount" class="text-emerald-600 dark:text-emerald-400 font-bold">₹0.00</span></div>
+                            <div class="flex justify-between border-t border-slate-300/50 dark:border-slate-700/50 pt-2 mt-1 relative z-10"><span class="text-slate-600 dark:text-slate-300 font-bold tracking-widest uppercase text-[10px]">Risk/Reward:</span> <span id="liveRrRatio" class="text-primary font-black">1:0.00</span></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Chart Attachment</label>
+                            <input type="file" id="chartImage" accept="image/*" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-2 text-xs font-medium text-slate-600 dark:text-slate-400 focus:outline-none file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary file:text-white hover:file:bg-primary-hover file:cursor-pointer transition-all backdrop-blur-md">
+                            <p id="imagePreserveNotice" class="hidden text-[10px] text-amber-600 dark:text-amber-500 font-bold mt-2 ml-1">⚠️ A layout image is cached. Uploading overrides it.</p>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Outcome Summary <span class="text-rose-500">*</span></label>
+                            <select id="tradeStatus" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-bold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all backdrop-blur-md"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="modal-psychology-segment" class="modal-sub-content hidden animate-fade-in space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <div class="space-y-3">
+                                <label class="block text-sm font-bold tracking-tight text-slate-900 dark:text-white">Entry Confidence (1-10)</label>
+                                <input type="range" id="ratingConfidence" min="1" max="10" value="5" oninput="document.getElementById('confidenceVal').textContent=this.value" class="w-full bg-slate-200/50 dark:bg-slate-800/50 h-2 rounded-lg cursor-pointer" style="accent-color: var(--color-primary)">
+                                <div class="flex justify-between text-xs text-slate-500 font-bold px-1">
+                                    <span>Low</span>
+                                    <span class="text-primary font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md font-mono">Val: <span id="confidenceVal">5</span></span>
+                                    <span>High</span>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <label class="block text-sm font-bold tracking-tight text-slate-900 dark:text-white">Satisfaction (1-10)</label>
+                                <input type="range" id="ratingSatisfaction" min="1" max="10" value="5" oninput="document.getElementById('satisfactionVal').textContent=this.value" class="w-full bg-slate-200/50 dark:bg-slate-800/50 h-2 rounded-lg cursor-pointer" style="accent-color: var(--color-primary)">
+                                <div class="flex justify-between text-xs text-slate-500 font-bold px-1">
+                                    <span>Dissatisfied</span>
+                                    <span class="text-primary font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md font-mono">Val: <span id="satisfactionVal">5</span></span>
+                                    <span>Content</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Emotional State</label>
+                                <input type="text" id="emotionalState" placeholder="e.g. Calm, FOMO, Focused" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-medium text-slate-900 dark:text-white text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all backdrop-blur-md">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Lessons & Notes</label>
+                                <textarea id="lessonsLearned" rows="3" placeholder="Insights from this execution..." class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 font-medium text-slate-900 dark:text-white text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 resize-none custom-scrollbar transition-all backdrop-blur-md"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/40 dark:bg-slate-900/40 p-6 rounded-2xl border border-white/50 dark:border-slate-700/50 backdrop-blur-md shadow-sm">
+                            <h4 class="text-sm font-bold tracking-tight text-slate-900 dark:text-white mb-1">Mistake Audit</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mb-5 font-medium">Classify systemic behavioral risks</p>
+                            <div id="mistakesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-semibold text-slate-600 dark:text-slate-300"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end items-center gap-3 border-t border-white/30 dark:border-slate-800/60 pt-5 mt-2">
+                    <button type="button" onclick="toggleModal('tradeModal')" class="bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-white px-5 py-2.5 rounded-xl text-sm font-bold tracking-tight transition duration-300 border border-white/50 dark:border-slate-700/50">Cancel</button>
+                    <button type="submit" class="bg-primary hover:bg-primary-hover text-white px-8 py-2.5 rounded-xl text-sm font-bold tracking-tight transition duration-300 shadow-lg hover:-translate-y-0.5">Commit Ledger Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="imagePreviewModal" class="hidden fixed inset-0 bg-slate-900/80 dark:bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center z-[100] p-4 transition-all">
+        <div class="absolute top-6 right-6 flex items-center gap-4 z-[110]">
+            <button onclick="handleZoomEngine('in')" class="p-2.5 bg-slate-800 text-white hover:bg-slate-700 transition rounded-xl" title="Zoom In"><i data-lucide="zoom-in" class="w-5 h-5"></i></button>
+            <button onclick="handleZoomEngine('out')" class="p-2.5 bg-slate-800 text-white hover:bg-slate-700 transition rounded-xl" title="Zoom Out"><i data-lucide="zoom-out" class="w-5 h-5"></i></button>
+            <button onclick="handleZoomEngine('reset')" class="p-2.5 bg-slate-800 text-white hover:bg-slate-700 transition rounded-xl" title="Reset Zoom"><i data-lucide="maximize" class="w-5 h-5"></i></button>
+            <button onclick="toggleModal('imagePreviewModal')" class="p-2.5 bg-rose-600 text-white hover:bg-rose-500 transition rounded-xl" title="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div id="zoomablePreviewContainer" class="w-full h-full max-w-5xl max-h-[80vh] overflow-auto flex items-center justify-center custom-scrollbar p-4">
+            <img id="modalPreviewImageSrc" src="" alt="Chart View" class="max-w-full max-h-full object-contain rounded-xl transition-transform duration-200 select-none shadow-2xl border border-white/10">
+        </div>
+    </div>
+
+    <div id="customizationModal" class="hidden fixed inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[90] p-4 overflow-y-auto transition-all">
+        <div class="glass-panel w-full max-w-3xl rounded-3xl p-6 shadow-2xl relative border-white/40 dark:border-slate-700/50 transform scale-100 transition-all animate-fade-in my-8">
+            <div class="flex justify-between items-center mb-6 border-b border-white/30 dark:border-slate-800/60 pb-4">
+                <h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="settings" class="text-primary w-6 h-6"></i> Customization Setup Engine
+                </h2>
+                <button onclick="toggleModal('customizationModal')" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition duration-300">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <form id="customizationForm" onsubmit="saveCustomization(event)" class="space-y-6">
+                <div class="bg-white/40 dark:bg-slate-900/40 p-5 rounded-2xl border border-white/50 dark:border-slate-700/50 backdrop-blur-md space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest border-b border-slate-200/50 dark:border-slate-800 pb-2">Global UI & Layout</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Accent Theme Color</label>
+                            <input type="color" id="custColor" class="w-full h-10 rounded-xl cursor-pointer bg-transparent border border-slate-300/50 dark:border-slate-700/50">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Font Family</label>
+                            <select id="custFont" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-2.5 font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary backdrop-blur-md">
+                                <option value='"Plus Jakarta Sans"'>Plus Jakarta Sans (Default)</option>
+                                <option value='"Inter"'>Inter</option>
+                                <option value='"Roboto"'>Roboto</option>
+                                <option value='"Poppins"'>Poppins</option>
+                                <option value='"Courier New"'>Courier New (Monospace)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Background Style</label>
+                            <select id="custBg" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-2.5 font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary backdrop-blur-md">
+                                <option value="mesh">Dot Mesh Overlay (Default)</option>
+                                <option value="solid">Solid Minimalist</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white/40 dark:bg-slate-900/40 p-5 rounded-2xl border border-white/50 dark:border-slate-700/50 backdrop-blur-md space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest border-b border-slate-200/50 dark:border-slate-800 pb-2">Trading Journal Data Formats</h3>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Enter multiple items separated by commas.</p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Setup Tags / Strategies</label>
+                            <textarea id="custStrategies" rows="2" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary resize-none backdrop-blur-md"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Ecosystems / Markets</label>
+                            <input type="text" id="custEcosystems" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary backdrop-blur-md">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Outcome Summary (First part determines Win/Loss logic)</label>
+                            <input type="text" id="custOutcomes" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary backdrop-blur-md">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Mistake Audit Types</label>
+                            <textarea id="custMistakes" rows="2" class="w-full bg-white/70 dark:bg-slate-900/70 border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-3 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:border-primary resize-none backdrop-blur-md"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="bg-primary hover:bg-primary-hover text-white px-8 py-3 rounded-xl text-sm font-bold tracking-tight transition duration-300 shadow-lg hover:-translate-y-0.5">
+                        Save Preferences
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="customConfirmModal" class="hidden fixed inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[110] p-4">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 shadow-2xl relative border-white/40 dark:border-slate-700/50 animate-fade-in text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 mb-4">
+                <i data-lucide="alert-triangle" class="h-6 w-6"></i>
+            </div>
+            <h3 id="confirmTitle" class="text-lg font-bold text-slate-900 dark:text-white mb-2">Confirmation Required</h3>
+            <p id="confirmMessage" class="text-sm text-slate-500 dark:text-slate-400 mb-6"></p>
+            <div class="flex justify-center gap-3">
+                <button id="confirmCancelBtn" class="bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-white px-5 py-2.5 rounded-xl text-sm font-bold transition">Cancel</button>
+                <button id="confirmOkBtn" class="bg-rose-500 hover:bg-rose-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition">Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check for cached trade diaries, if empty we initialize with 5 stunning realistic mock trades so the UI isn't flat.
+        let trades = JSON.parse(localStorage.getItem('trade_diary_data'));
+        
+        // Define default mock system state
+        const getMockDates = (offsetDays) => {
+            const date = new Date();
+            date.setDate(date.getDate() - offsetDays);
+            return date.toISOString().split('T')[0];
+        };
+
+        if (!trades || trades.length === 0) {
+            trades = [
+                {
+                    date: getMockDates(4),
+                    tradeTime: "09:45",
+                    symbol: "RELIANCE",
+                    marketCondition: "Indian Market",
+                    currency: "INR",
+                    entryPrice: 2450.00,
+                    quantity: 50,
+                    exitPrice: 2495.00,
+                    stopLossPrice: 2430.00,
+                    targetPrice: 2500.00,
+                    manualPnlAmount: "",
+                    calculatedPl: 2250.00,
+                    direction: "LONG",
+                    tradeDuration: "SWING",
+                    strategyTag: "Breakout",
+                    tradeStatus: "WIN",
+                    ratingConfidence: 8,
+                    ratingSatisfaction: 9,
+                    emotionalState: "Focused & calm",
+                    lessonsLearned: "Perfect breakout execution on high volume confirmation.",
+                    mistakesMade: ["No Mistakes"],
+                    chartImage: ""
+                },
+                {
+                    date: getMockDates(3),
+                    tradeTime: "14:15",
+                    symbol: "BTCUSDT",
+                    marketCondition: "Crypto Space",
+                    currency: "INR",
+                    entryPrice: 58200.00,
+                    quantity: 1,
+                    exitPrice: 57550.00,
+                    stopLossPrice: 57700.00,
+                    targetPrice: 59500.00,
+                    manualPnlAmount: "",
+                    calculatedPl: -650.00,
+                    direction: "LONG",
+                    tradeDuration: "INTRADAY",
+                    strategyTag: "Pullback",
+                    tradeStatus: "LOSS",
+                    ratingConfidence: 5,
+                    ratingSatisfaction: 3,
+                    emotionalState: "Anxious",
+                    lessonsLearned: "Chased entry after initial surge. Did not respect core pivot structures.",
+                    mistakesMade: ["Over-Trading", "FOMO Entry"],
+                    chartImage: ""
+                },
+                {
+                    date: getMockDates(2),
+                    tradeTime: "11:30",
+                    symbol: "ETHUSDT",
+                    marketCondition: "Crypto Space",
+                    currency: "INR",
+                    entryPrice: 3420.00,
+                    quantity: 4,
+                    exitPrice: 3510.00,
+                    stopLossPrice: 3380.00,
+                    targetPrice: 3550.00,
+                    manualPnlAmount: "",
+                    calculatedPl: 360.00,
+                    direction: "LONG",
+                    tradeDuration: "INTRADAY",
+                    strategyTag: "9&15 Ema",
+                    tradeStatus: "WIN",
+                    ratingConfidence: 7,
+                    ratingSatisfaction: 8,
+                    emotionalState: "Calm",
+                    lessonsLearned: "Clean trend follow using fast exponential moving averages.",
+                    mistakesMade: ["No Mistakes"],
+                    chartImage: ""
+                },
+                {
+                    date: getMockDates(1),
+                    tradeTime: "10:15",
+                    symbol: "AAPL",
+                    marketCondition: "US Equity",
+                    currency: "INR",
+                    entryPrice: 185.00,
+                    quantity: 100,
+                    exitPrice: 191.50,
+                    stopLossPrice: 181.00,
+                    targetPrice: 195.00,
+                    manualPnlAmount: "",
+                    calculatedPl: 650.00,
+                    direction: "LONG",
+                    tradeDuration: "SWING",
+                    strategyTag: "News-based",
+                    tradeStatus: "WIN",
+                    ratingConfidence: 9,
+                    ratingSatisfaction: 7,
+                    emotionalState: "Excited",
+                    lessonsLearned: "Exited too early on strong earnings drive momentum.",
+                    mistakesMade: ["Early Exit"],
+                    chartImage: ""
+                },
+                {
+                    date: getMockDates(0),
+                    tradeTime: "15:00",
+                    symbol: "NIFTY",
+                    marketCondition: "Indian Market",
+                    currency: "INR",
+                    entryPrice: 22100.00,
+                    quantity: 2,
+                    exitPrice: 22000.00,
+                    stopLossPrice: 22050.00,
+                    targetPrice: 22250.00,
+                    manualPnlAmount: "",
+                    calculatedPl: -200.00,
+                    direction: "LONG",
+                    tradeDuration: "INTRADAY",
+                    strategyTag: "Breakout",
+                    tradeStatus: "LOSS",
+                    ratingConfidence: 6,
+                    ratingSatisfaction: 4,
+                    emotionalState: "Frustrated",
+                    lessonsLearned: "Ignored initial stop loss validation when structure collapsed.",
+                    mistakesMade: ["Ignored Stop Loss"],
+                    chartImage: ""
+                }
+            ];
+            localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+        }
+        
+        let appConfig = JSON.parse(localStorage.getItem('trade_diary_config')) || {
+            strategies: ["Breakout", "News-based", "9&15 Ema", "Pullback"],
+            ecosystems: ["Indian Market", "Crypto Space", "Forex", "US Equity"],
+            outcomes: ["WIN: Capital Gains", "LOSS: Capital Drawdown"],
+            mistakes: ["Over-Trading", "Early Exit", "Exited Too Late", "FOMO Entry", "Ignored Signals", "No Clear Plan", "Ignored Stop Loss", "No Mistakes"],
+            theme: { color: "#4f46e5", font: '"Plus Jakarta Sans"', bg: "mesh" }
+        };
+
+        let editingTradeIndex = null; 
+        let currentImageZoomLevel = 1.0; 
+        let currentSearchFilter = "";
+
+        let equityChartInstance = null;
+        let growthChartInstance = null;
+        let allocationChartInstance = null;
+        let pnlBarChartInstance = null;
+        let analyticsStrategyChartInstance = null;
+        let mistakeChartInstance = null;
+        let winLossDistributionChartInstance = null;
+        let strategyPnlDistributionChartInstance = null;
+        let sentimentGaugeInstance = null; 
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeThemeModeEngine();
+            applyCustomizations();
+            renderDynamicForms();
+            updateDashboardAnalytics();
+            lucide.createIcons();
+        });
+
+        // Beautiful custom overlays bypassing native systems
+        function showCustomConfirm(title, message, callback) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            const modal = document.getElementById('customConfirmModal');
+            modal.classList.remove('hidden');
+            
+            const okBtn = document.getElementById('confirmOkBtn');
+            const cancelBtn = document.getElementById('confirmCancelBtn');
+            
+            const newOk = okBtn.cloneNode(true);
+            const newCancel = cancelBtn.cloneNode(true);
+            okBtn.parentNode.replaceChild(newOk, okBtn);
+            cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+            
+            newOk.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                callback(true);
+            });
+            
+            newCancel.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                callback(false);
+            });
+            lucide.createIcons();
+        }
+
+        // --- STREAMING_CHUNK: Managing customization theme state changes... ---
+        function applyCustomizations() {
+            document.documentElement.style.setProperty('--color-primary', appConfig.theme.color);
+            document.documentElement.style.setProperty('--color-primary-hover', adjustColorBrightness(appConfig.theme.color, 15));
+            document.documentElement.style.setProperty('--font-family', appConfig.theme.font);
+            
+            if (appConfig.theme.bg === 'solid') {
+                document.body.classList.remove('bg-mesh-active');
+                document.documentElement.style.setProperty('--bg-mesh-light', 'none');
+                document.documentElement.style.setProperty('--bg-mesh-dark', 'none');
+            } else {
+                document.body.classList.add('bg-mesh-active');
+                document.documentElement.style.removeProperty('--bg-mesh-light');
+                document.documentElement.style.removeProperty('--bg-mesh-dark');
+            }
+        }
+
+        function renderDynamicForms() {
+            const ecoModalSel = document.getElementById('marketCondition');
+            const ecoCalSel = document.getElementById('calMarketFilter');
+            if(ecoModalSel) ecoModalSel.innerHTML = appConfig.ecosystems.map(e => `<option value="${e}">${e}</option>`).join('');
+            if(ecoCalSel) ecoCalSel.innerHTML = `<option value="ALL">All Environments</option>` + appConfig.ecosystems.map(e => `<option value="${e}">${e}</option>`).join('');
+
+            const outcomeSel = document.getElementById('tradeStatus');
+            if(outcomeSel) {
+                outcomeSel.innerHTML = appConfig.outcomes.map(o => {
+                    const internalVal = o.toUpperCase().includes('WIN') ? 'WIN' : 'LOSS';
+                    return `<option value="${internalVal}">${o}</option>`;
+                }).join('');
+            }
+
+            const mistakesContainer = document.getElementById('mistakesContainer');
+            if (mistakesContainer) {
+                mistakesContainer.innerHTML = appConfig.mistakes.map(m => `
+                    <label class="flex items-center space-x-3 cursor-pointer group">
+                        <input type="checkbox" name="mistakesMade" value="${m}" class="rounded bg-white dark:bg-slate-900 border-slate-300/50 dark:border-slate-700/50 focus:ring-0 w-4 h-4 transition" style="color: var(--color-primary)">
+                        <span class="group-hover:text-slate-900 dark:group-hover:text-white transition text-xs font-semibold">${m}</span>
+                    </label>
+                `).join('');
+            }
+        }
+
+        function openCustomizationModal() {
+            document.getElementById('custColor').value = appConfig.theme.color;
+            document.getElementById('custFont').value = appConfig.theme.font;
+            document.getElementById('custBg').value = appConfig.theme.bg;
+            
+            document.getElementById('custStrategies').value = appConfig.strategies.join(', ');
+            document.getElementById('custEcosystems').value = appConfig.ecosystems.join(', ');
+            document.getElementById('custOutcomes').value = appConfig.outcomes.join(', ');
+            document.getElementById('custMistakes').value = appConfig.mistakes.join(', ');
+            
+            toggleModal('customizationModal');
+        }
+
+        // --- STREAMING_CHUNK: Processing customization configurations... ---
+        function saveCustomization(event) {
+            event.preventDefault();
+            
+            const parseList = (str) => str.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            
+            appConfig.theme.color = document.getElementById('custColor').value;
+            appConfig.theme.font = document.getElementById('custFont').value;
+            appConfig.theme.bg = document.getElementById('custBg').value;
+            
+            appConfig.strategies = parseList(document.getElementById('custStrategies').value);
+            appConfig.ecosystems = parseList(document.getElementById('custEcosystems').value);
+            appConfig.outcomes = parseList(document.getElementById('custOutcomes').value);
+            appConfig.mistakes = parseList(document.getElementById('custMistakes').value);
+
+            localStorage.setItem('trade_diary_config', JSON.stringify(appConfig));
+            
+            applyCustomizations();
+            renderDynamicForms();
+            updateDashboardAnalytics();
+            if (!document.getElementById('calendar-view').classList.contains('hidden')) renderCalendarEngine();
+            
+            toggleModal('customizationModal');
+        }
+
+        function adjustColorBrightness(hex, percent) {
+            hex = hex.replace(/^\s*#|\s*$/g, '');
+            if(hex.length == 3) hex = hex.replace(/(.)/g, '$1$1');
+            var r = parseInt(hex.substr(0, 2), 16),
+                g = parseInt(hex.substr(2, 2), 16),
+                b = parseInt(hex.substr(4, 2), 16);
+            return '#' +
+               ((0|(1<<8) + r + (256 - r) * percent / 100).toString(16)).substr(1) +
+               ((0|(1<<8) + g + (256 - g) * percent / 100).toString(16)).substr(1) +
+               ((0|(1<<8) + b + (256 - b) * percent / 100).toString(16)).substr(1);
+        }
+
+        // --- STREAMING_CHUNK: Initializing theme mode configuration updates... ---
+        function initializeThemeModeEngine() {
+            if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-sun-icon').classList.add('hidden');
+                document.getElementById('theme-moon-icon').classList.remove('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-sun-icon').classList.remove('hidden');
+                document.getElementById('theme-moon-icon').classList.add('hidden');
+            }
+        }
+
+        function toggleThemeModeEngine() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            const sunIcon = document.getElementById('theme-sun-icon');
+            const moonIcon = document.getElementById('theme-moon-icon');
+            if (isDark) {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                localStorage.setItem('theme', 'light');
+            }
+            updateDashboardAnalytics();
+        }
+        
+        function getChartColors() {
+            const isDark = document.documentElement.classList.contains('dark');
+            return {
+                grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                tick: isDark ? '#64748b' : '#64748b',
+                primary: appConfig.theme.color
+            };
+        }
+
+        function switchTab(targetViewId) {
+            document.querySelectorAll('.tab-content').forEach(view => {
+                view.classList.add('hidden');
+                view.classList.remove('animate-fade-in');
+            });
+            if (document.getElementById(targetViewId)) {
+                const targetView = document.getElementById(targetViewId);
+                targetView.classList.remove('hidden');
+                void targetView.offsetWidth; 
+                targetView.classList.add('animate-fade-in');
+            }
+
+            const activeClass = "bg-primary text-white shadow-md";
+            const inactiveClass = "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-transparent";
+
+            ['dashboard-view', 'calendar-view', 'portfolio-view', 'pnl-view', 'analytics-hub-view'].forEach(id => {
+                const btn = document.getElementById('btn-' + id);
+                if(btn) btn.className = `px-4 py-1.5 rounded-lg text-sm font-semibold tracking-tight transition duration-300 ${targetViewId === id ? activeClass : inactiveClass}`;
+            });
+
+            if(targetViewId === 'calendar-view') {
+                populateCalendarFilters();
+                renderCalendarEngine();
+            }
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden');
+            if (modalId === 'imagePreviewModal') currentImageZoomLevel = 1.0;
+        }
+
+        function clearAllData() {
+            showCustomConfirm(
+                "Reset All Ledger Data",
+                "⚠️ WARNING: This will permanently delete ALL trading logs and reset your dashboard metrics. Are you sure you want to proceed?",
+                (confirmed) => {
+                    if (confirmed) {
+                        trades = [];
+                        localStorage.removeItem('trade_diary_data');
+                        updateDashboardAnalytics();
+                        if (!document.getElementById('calendar-view').classList.contains('hidden')) renderCalendarEngine();
+                    }
+                }
+            );
+        }
+
+        // --- STREAMING_CHUNK: Validating quick-execution entries... ---
+        function openQuickAddModal() {
+            document.getElementById('quickAddForm').reset();
+            toggleModal('quickAddModal');
+        }
+
+        function submitQuickAdd(event) {
+            event.preventDefault();
+            const symbol = document.getElementById('qaSymbol').value.toUpperCase().trim();
+            const pnl = parseFloat(document.getElementById('qaPnl').value) || 0;
+            const dir = document.getElementById('qaDirection').value;
+
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const liveTimeStr = `${hours}:${minutes}`;
+
+            const tradeObj = {
+                date: new Date().toISOString().split('T')[0],
+                tradeTime: liveTimeStr,
+                symbol: symbol,
+                marketCondition: appConfig.ecosystems[0] || "Indian",
+                currency: "INR",
+                entryPrice: 0,
+                quantity: 1, 
+                exitPrice: 0,
+                stopLossPrice: 0,
+                targetPrice: 0,
+                manualPnlAmount: pnl,
+                calculatedPl: pnl,
+                direction: dir,
+                tradeDuration: "INTRADAY",
+                strategyTag: "Quick Entry",
+                tradeStatus: pnl >= 0 ? "WIN" : "LOSS",
+                ratingConfidence: 5,
+                ratingSatisfaction: 5,
+                emotionalState: "Calm",
+                lessonsLearned: "Logged via Quick Execution engine.",
+                mistakesMade: pnl >= 0 ? ["No Mistakes"] : [],
+                chartImage: ""
+            };
+
+            trades.push(tradeObj);
+            localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+            
+            toggleModal('quickAddModal');
+            updateDashboardAnalytics();
+            if (!document.getElementById('calendar-view').classList.contains('hidden')) renderCalendarEngine();
+        }
+
+        // --- STREAMING_CHUNK: Managing detailed ledger elements... ---
+        function resetModalForm() {
+            document.getElementById('tradeForm').reset();
+            document.getElementById('confidenceVal').textContent = "5";
+            document.getElementById('satisfactionVal').textContent = "5";
+            document.getElementById('currency').value = "INR";
+            document.getElementById('liveRiskAmount').textContent = "₹0.00";
+            document.getElementById('liveRewardAmount').textContent = "₹0.00";
+            document.getElementById('liveRrRatio').textContent = "1:0.00";
+            document.getElementById('imagePreserveNotice').classList.add('hidden');
+            document.getElementById('newStrategyInputGroup').classList.add('hidden');
+            switchModalSubTab('modal-general-segment');
+        }
+
+        function openNewTradeModal() {
+            editingTradeIndex = null;
+            resetModalForm();
+            document.getElementById('modalTitleDisplay').textContent = "Deep Entry Ledger";
+            document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
+            
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('tradeTime').value = `${hours}:${minutes}`;
+
+            populateModalStrategyDropdown();
+            toggleModal('tradeModal');
+            calculateLiveRiskProfile();
+        }
+
+        function saveTradingJournal(event) {
+            event.preventDefault();
+            const selectedDirection = document.querySelector('input[name="direction"]:checked').value;
+            const selectedDuration = document.querySelector('input[name="tradeDuration"]:checked').value;
+            
+            let finalStrategy = document.getElementById('strategyTag').value;
+            if (finalStrategy === "__ADD_NEW__") {
+                const customName = document.getElementById('customStrategyName').value.trim();
+                if (customName) {
+                    finalStrategy = customName;
+                    if (!appConfig.strategies.includes(customName)) {
+                        appConfig.strategies.push(customName);
+                        localStorage.setItem('trade_diary_config', JSON.stringify(appConfig));
+                    }
+                } else finalStrategy = "Unassigned";
+            }
+
+            const mistakes = [];
+            document.querySelectorAll('input[name="mistakesMade"]:checked').forEach(cb => mistakes.push(cb.value));
+
+            const tradeObj = {
+                date: document.getElementById('tradeDate').value,
+                tradeTime: document.getElementById('tradeTime').value,
+                symbol: document.getElementById('symbol').value.toUpperCase().trim(),
+                marketCondition: document.getElementById('marketCondition').value,
+                currency: document.getElementById('currency').value,
+                entryPrice: parseFloat(document.getElementById('entryPrice').value) || 0,
+                quantity: parseFloat(document.getElementById('quantity').value) || 0,
+                exitPrice: parseFloat(document.getElementById('exitPrice').value) || 0,
+                stopLossPrice: parseFloat(document.getElementById('stopLossPrice').value) || 0,
+                targetPrice: parseFloat(document.getElementById('targetPrice').value) || 0,
+                manualPnlAmount: document.getElementById('manualPnlAmount').value ? parseFloat(document.getElementById('manualPnlAmount').value) : "",
+                direction: selectedDirection,
+                tradeDuration: selectedDuration,
+                strategyTag: finalStrategy,
+                tradeStatus: document.getElementById('tradeStatus').value,
+                ratingConfidence: parseInt(document.getElementById('ratingConfidence').value) || 5,
+                ratingSatisfaction: parseInt(document.getElementById('ratingSatisfaction').value) || 5,
+                emotionalState: document.getElementById('emotionalState').value.trim() || "Focused",
+                lessonsLearned: document.getElementById('lessonsLearned').value.trim() || "N/A",
+                mistakesMade: mistakes.length > 0 ? mistakes : ["No Mistakes"],
+                chartImage: editingTradeIndex !== null ? trades[editingTradeIndex].chartImage : ""
+            };
+
+            const fileInput = document.getElementById('chartImage');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tradeObj.chartImage = e.target.result;
+                    commitToStorageAndRefresh(tradeObj);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else commitToStorageAndRefresh(tradeObj);
+        }
+
+        // --- STREAMING_CHUNK: Processing storage execution updates... ---
+        function commitToStorageAndRefresh(tradeObj) {
+            let tradePl = 0;
+            if (tradeObj.manualPnlAmount !== "") {
+                tradePl = tradeObj.manualPnlAmount;
+            } else {
+                tradePl = tradeObj.direction === "SHORT" 
+                    ? (tradeObj.entryPrice - tradeObj.exitPrice) * tradeObj.quantity 
+                    : (tradeObj.exitPrice - tradeObj.entryPrice) * tradeObj.quantity;
+            }
+            tradeObj.calculatedPl = tradePl;
+
+            if (editingTradeIndex !== null) trades[editingTradeIndex] = tradeObj;
+            else trades.push(tradeObj);
+
+            localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+            toggleModal('tradeModal');
+            updateDashboardAnalytics();
+            if (!document.getElementById('calendar-view').classList.contains('hidden')) renderCalendarEngine();
+        }
+
+        function editTrade(index) {
+            editingTradeIndex = index;
+            resetModalForm();
+            document.getElementById('modalTitleDisplay').textContent = "Modify Parameters";
+            populateModalStrategyDropdown();
+            
+            const t = trades[index];
+            document.getElementById('tradeDate').value = t.date || "";
+            document.getElementById('tradeTime').value = t.tradeTime || "";
+            document.getElementById('symbol').value = t.symbol || "";
+            document.getElementById('marketCondition').value = t.marketCondition || (appConfig.ecosystems[0] || "Indian");
+            document.getElementById('currency').value = t.currency || "INR";
+            document.getElementById('entryPrice').value = t.entryPrice || "";
+            document.getElementById('quantity').value = t.quantity || "";
+            document.getElementById('exitPrice').value = t.exitPrice || "";
+            document.getElementById('stopLossPrice').value = t.stopLossPrice || "";
+            document.getElementById('targetPrice').value = t.targetPrice || "";
+            document.getElementById('manualPnlAmount').value = t.manualPnlAmount || "";
+            document.getElementById('tradeStatus').value = t.tradeStatus || "WIN";
+            document.getElementById('emotionalState').value = t.emotionalState || "";
+            document.getElementById('lessonsLearned').value = t.lessonsLearned || "";
+
+            if(appConfig.strategies.includes(t.strategyTag)) document.getElementById('strategyTag').value = t.strategyTag;
+            else if (t.strategyTag) {
+                document.getElementById('strategyTag').value = "__ADD_NEW__";
+                handleStrategySelection();
+                document.getElementById('customStrategyName').value = t.strategyTag;
+            }
+
+            document.getElementById('dur-swing').checked = (t.tradeDuration === "SWING");
+            document.getElementById('dur-intraday').checked = (t.tradeDuration !== "SWING");
+            document.getElementById('dir-short').checked = (t.direction === "SHORT");
+            document.getElementById('dir-long').checked = (t.direction !== "SHORT");
+
+            document.getElementById('ratingConfidence').value = t.ratingConfidence || 5;
+            document.getElementById('confidenceVal').textContent = t.ratingConfidence || 5;
+            document.getElementById('ratingSatisfaction').value = t.ratingSatisfaction || 5;
+            document.getElementById('satisfactionVal').textContent = t.ratingSatisfaction || 5;
+
+            if (t.chartImage) document.getElementById('imagePreserveNotice').classList.remove('hidden');
+
+            document.querySelectorAll('input[name="mistakesMade"]').forEach(cb => {
+                cb.checked = (t.mistakesMade && Array.isArray(t.mistakesMade) && t.mistakesMade.includes(cb.value));
+            });
+
+            toggleModal('tradeModal');
+            setTimeout(updatePhotoLayoutCalculations, 30);
+            setTimeout(calculateLiveRiskProfile, 30);
+        }
+
+        function removeTrade(index) {
+            showCustomConfirm(
+                "Delete Ledger Entry",
+                "Are you sure you want to permanently purge this transaction record from your trade history logs?",
+                (confirmed) => {
+                    if (confirmed) {
+                        trades.splice(index, 1);
+                        localStorage.setItem('trade_diary_data', JSON.stringify(trades));
+                        updateDashboardAnalytics();
+                        if (!document.getElementById('calendar-view').classList.contains('hidden')) renderCalendarEngine();
+                    }
+                }
+            );
+        }
+
+        function switchModalSubTab(segmentId) {
+            document.querySelectorAll('.modal-sub-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(segmentId).classList.remove('hidden');
+
+            const btnGen = document.getElementById('modal-tab-general');
+            const btnPsych = document.getElementById('modal-tab-psychology');
+
+            const active = "pb-3 border-b-2 border-primary text-slate-900 dark:text-white font-bold tracking-tight flex items-center gap-2 transition duration-300";
+            const inactive = "pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-semibold tracking-tight flex items-center gap-2 transition duration-300";
+
+            if(segmentId === 'modal-general-segment') { btnGen.className = active; btnPsych.className = inactive; } 
+            else { btnGen.className = inactive; btnPsych.className = active; }
+        }
+
+        function updatePhotoLayoutCalculations() {
+            const entryPrice = parseFloat(document.getElementById('entryPrice').value) || 0;
+            const qty = parseFloat(document.getElementById('quantity').value) || 0;
+            document.getElementById('totalAmountDisplay').value = (entryPrice * qty).toFixed(2);
+        }
+
+        // --- STREAMING_CHUNK: Computing live risk profile rewards ratio... ---
+        function calculateLiveRiskProfile() {
+            setTimeout(() => {
+                const dirElement = document.querySelector('input[name="direction"]:checked');
+                const dir = dirElement ? dirElement.value : "LONG";
+
+                const entryPrice = parseFloat(document.getElementById('entryPrice').value) || 0;
+                const qty = parseFloat(document.getElementById('quantity').value) || 0;
+                const slPrice = parseFloat(document.getElementById('stopLossPrice').value) || 0;
+                const tpPrice = parseFloat(document.getElementById('targetPrice').value) || 0;
+
+                let riskAmount = 0;
+                let rewardAmount = 0;
+
+                if (entryPrice > 0 && qty > 0) {
+                    if (slPrice > 0) riskAmount = dir === "LONG" ? (entryPrice - slPrice) * qty : (slPrice - entryPrice) * qty;
+                    if (tpPrice > 0) rewardAmount = dir === "LONG" ? (tpPrice - entryPrice) * qty : (entryPrice - tpPrice) * qty;
+                }
+
+                riskAmount = Math.max(0, riskAmount);
+                rewardAmount = Math.max(0, rewardAmount);
+
+                let rrRatio = riskAmount > 0 ? (rewardAmount / riskAmount).toFixed(2) : "0.00";
+                const selectedCurrency = document.getElementById('currency').value;
+                const sign = selectedCurrency === "USD" ? "$" : "₹";
+
+                document.getElementById('liveRiskAmount').textContent = `${sign}${riskAmount.toFixed(2)}`;
+                document.getElementById('liveRewardAmount').textContent = `${sign}${rewardAmount.toFixed(2)}`;
+                document.getElementById('liveRrRatio').textContent = `1:${rrRatio}`;
+            }, 10);
+        }
+
+        function handleZoomEngine(action) {
+            const previewContainer = document.getElementById('zoomablePreviewContainer');
+            if (!previewContainer) return;
+            const targetedImg = previewContainer.querySelector('img');
+            if (!targetedImg) return;
+            
+            if (action === 'in') currentImageZoomLevel += 0.15;
+            else if (action === 'out') currentImageZoomLevel = Math.max(0.4, currentImageZoomLevel - 0.15);
+            else if (action === 'reset') currentImageZoomLevel = 1.0;
+            targetedImg.style.transform = `scale(${currentImageZoomLevel})`;
+        }
+
+        function handleStrategySelection() {
+            const select = document.getElementById('strategyTag');
+            const group = document.getElementById('newStrategyInputGroup');
+            const input = document.getElementById('customStrategyName');
+
+            if (select.value === "__ADD_NEW__") {
+                group.classList.remove('hidden');
+                input.required = true;
+                input.focus();
+            } else {
+                group.classList.add('hidden');
+                input.required = false;
+                input.value = "";
+            }
+        }
+
+        function populateModalStrategyDropdown() {
+            const select = document.getElementById('strategyTag');
+            select.innerHTML = '';
+            appConfig.strategies.forEach(strat => {
+                const opt = document.createElement('option');
+                opt.value = strat; opt.textContent = strat;
+                select.appendChild(opt);
+            });
+            const addNewOpt = document.createElement('option');
+            addNewOpt.value = "__ADD_NEW__"; addNewOpt.textContent = "+ Add New Strategy...";
+            select.appendChild(addNewOpt);
+        }
+
+        // --- STREAMING_CHUNK: Populating calendar filters... ---
+        function populateCalendarFilters() {
+            const mSel = document.getElementById('calMonthFilter');
+            const ySel = document.getElementById('calYearFilter');
+            if(mSel.innerHTML !== "") return; 
+
+            const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            mSel.innerHTML = "";
+            months.forEach((m, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx; opt.textContent = m;
+                mSel.appendChild(opt);
+            });
+
+            const currentObj = new Date();
+            mSel.value = currentObj.getMonth();
+
+            ySel.innerHTML = "";
+            const currentYear = currentObj.getFullYear();
+            for(let y = currentYear - 3; y <= currentYear + 2; y++) {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y;
+                ySel.appendChild(opt);
+            }
+            ySel.value = currentYear;
+        }
+
+        function renderCalendarEngine() {
+            const rootGrid = document.getElementById('calendarGridBody');
+            rootGrid.innerHTML = "";
+
+            const targetMonth = parseInt(document.getElementById('calMonthFilter').value);
+            const targetYear = parseInt(document.getElementById('calYearFilter').value);
+            const targetMarket = document.getElementById('calMarketFilter').value;
+
+            let calendarMap = {};
+            trades.forEach(t => {
+                if(!t.date) return;
+                const dObj = new Date(t.date);
+                if(dObj.getFullYear() !== targetYear || dObj.getMonth() !== targetMonth) return;
+                if(targetMarket !== "ALL" && t.marketCondition !== targetMarket) return;
+
+                const dayKey = dObj.getDate();
+                if(!calendarMap[dayKey]) calendarMap[dayKey] = { pnl: 0, count: 0, currency: t.currency || "INR" };
+                calendarMap[dayKey].pnl += (t.calculatedPl || 0);
+                calendarMap[dayKey].count++;
+            });
+
+            const firstDayIndex = new Date(targetYear, targetMonth, 1).getDay();
+            const daysInMonthTotal = new Date(targetYear, targetMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "bg-slate-100/30 dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-800/30 min-h-[90px] rounded-xl backdrop-blur-sm";
+                rootGrid.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= daysInMonthTotal; day++) {
+                const dayBlock = document.createElement('div');
+                let dynamicDataHTML = "";
+                let classSty = "bg-white/50 dark:bg-slate-900/50 border border-white/50 dark:border-slate-700/50 backdrop-blur-md";
+
+                if (calendarMap[day]) {
+                    const metrics = calendarMap[day];
+                    const signSymbol = metrics.pnl >= 0 ? "+" : "";
+                    const sign = metrics.currency === "USD" ? "$" : "₹";
+                    const textColor = metrics.pnl >= 0 ? "text-emerald-500 dark:text-emerald-400 font-bold" : "text-rose-500 dark:text-rose-400 font-bold";
+                    classSty = metrics.pnl >= 0 ? "bg-emerald-50/70 dark:bg-emerald-900/30 border border-emerald-200/50 dark:border-emerald-800/50 backdrop-blur-md shadow-[inset_0_0_15px_rgba(16,185,129,0.05)]" : "bg-rose-50/70 dark:bg-rose-900/30 border border-rose-200/50 dark:border-rose-800/50 backdrop-blur-md shadow-[inset_0_0_15px_rgba(244,63,94,0.05)]";
+                    
+                    dynamicDataHTML = `
+                        <div class="text-[11px] mt-1 font-mono font-bold tracking-tight ${textColor}">${signSymbol}${sign}${Math.abs(metrics.pnl).toFixed(0)}</div>
+                        <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">${metrics.count} items</div>
+                    `;
+                }
+
+                dayBlock.className = `p-3 min-h-[90px] rounded-xl shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${classSty}`;
+                dayBlock.innerHTML = `
+                    <div class="text-xs font-black text-slate-500 dark:text-slate-400">${day}</div>
+                    <div class="text-center">${dynamicDataHTML}</div><div></div>
+                `;
+                rootGrid.appendChild(dayBlock);
+            }
+        }
+
+        // --- STREAMING_CHUNK: Formatting XML spreadsheet layout... ---
+        function exportToExcel() {
+            let xmlFile = `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40">
+    <Styles>
+        <Style ss:ID="HeaderStyle"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0f172a" ss:Pattern="Solid"/></Style>
+        <Style ss:ID="DataStyle"><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>
+    </Styles>
+    <Worksheet ss:Name="Ledger">
+        <Table>
+            <Row ss:Height="22">
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Date</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Time</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Asset Symbol</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Currency</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Direction</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Outcome Status</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Manual P&L Override</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Entry Price</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Exit Price</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Quantity</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Stop Loss</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Take Profit</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Market Conditions</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Calculated Net PnL</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Strategy Setup Tag</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Confidence Level</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Satisfaction Rating</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Emotional State</Data></Cell>
+                <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Lessons Learned</Data></Cell>
+            </Row>`;
+
+            trades.forEach(trade => {
+                let tradePl = trade.calculatedPl || 0;
+                xmlFile += `
+            <Row ss:Height="18">
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.date || 'N/A'}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.tradeTime || 'N/A'}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.symbol}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.currency || 'INR'}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.direction || 'LONG'}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.tradeStatus || 'WIN'}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.manualPnlAmount || 0}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.entryPrice}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.exitPrice}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.quantity}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.stopLossPrice || 0}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.targetPrice || 0}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.marketCondition || 'N/A'}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${tradePl.toFixed(2)}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.strategyTag || 'None'}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.ratingConfidence || 5}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="Number">${trade.ratingSatisfaction || 5}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.emotionalState || 'N/A'}</Data></Cell>
+                <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${trade.lessonsLearned || 'N/A'}</Data></Cell>
+            </Row>`;
+            });
+            xmlFile += `</Table></Worksheet></Workbook>`;
+            const blob = new Blob([xmlFile], { type: 'application/vnd.ms-excel' });
+            const anchor = document.createElement('a');
+            anchor.href = URL.createObjectURL(blob);
+            anchor.download = `TradeDiary_Pro_V2_${new Date().toISOString().split('T')[0]}.xls`;
+            document.body.appendChild(anchor); anchor.click(); document.body.removeChild(anchor);
+        }
+
+        function filterTransactionLogs() {
+            currentSearchFilter = document.getElementById('logSearchInput').value.toLowerCase();
+            updateDashboardAnalytics();
+        }
+
+        // --- STREAMING_CHUNK: Processing overall system calculation metrics... ---
+        function updateDashboardAnalytics() {
+            let totalPl = 0; let wins = 0; let losses = 0;
+            let grossWinsValue = 0; let grossLossesValue = 0;
+            let workingWinStreak = 0; let workingLossStreak = 0;
+            let maxWinStreak = 0; let maxLossStreak = 0;
+            let maxWinSingle = 0; let maxLossSingle = 0;
+            let peakEquity = 0; let maxSystemDrawdown = 0;
+
+            let trackingPsychology = {};
+            appConfig.mistakes.forEach(m => trackingPsychology[m] = 0);
+            
+            let symbolPnlMetrics = {}; let strategyMetrics = {};
+            let monthlyDistributionData = {};
+            let weekdayMetrics = { "Monday": 0, "Tuesday": 0, "Wednesday": 0, "Thursday": 0, "Friday": 0, "Saturday": 0, "Sunday": 0 };
+
+            const filterElem = document.getElementById('analyticsStrategyFilter');
+            const selectedStrategyFilter = filterElem ? filterElem.value : "ALL";
+
+            let processedStrategies = [];
+            trades.forEach(t => { if (t.strategyTag && !processedStrategies.includes(t.strategyTag)) processedStrategies.push(t.strategyTag); });
+            
+            if (filterElem) {
+                const prevVal = filterElem.value;
+                let optHTML = '<option value="ALL">All Strategies</option>';
+                processedStrategies.forEach(s => optHTML += `<option value="${s}">${s}</option>`);
+                filterElem.innerHTML = optHTML;
+                filterElem.value = prevVal || "ALL";
+            }
+
+            let filteredTrades = trades.filter(t => (selectedStrategyFilter !== "ALL" && t.strategyTag !== selectedStrategyFilter) ? false : true);
+            filteredTrades.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            filteredTrades.forEach(trade => {
+                let tradePl = trade.calculatedPl || 0;
+                totalPl += tradePl;
+
+                if (tradePl >= 0) {
+                    wins++; grossWinsValue += tradePl; workingWinStreak++;
+                    maxLossStreak = Math.max(maxLossStreak, workingLossStreak); workingLossStreak = 0;
+                    if(tradePl > maxWinSingle) maxWinSingle = tradePl;
+                } else {
+                    losses++; grossLossesValue += Math.abs(tradePl); workingLossStreak++;
+                    maxWinStreak = Math.max(maxWinStreak, workingWinStreak); workingWinStreak = 0;
+                    if(Math.abs(tradePl) > maxLossSingle) maxLossSingle = Math.abs(tradePl);
+                }
+                maxWinStreak = Math.max(maxWinStreak, workingWinStreak); maxLossStreak = Math.max(maxLossStreak, workingLossStreak);
+
+                if (totalPl > peakEquity) peakEquity = totalPl;
+                let currentDrawdown = peakEquity - totalPl;
+                if (currentDrawdown > maxSystemDrawdown) maxSystemDrawdown = currentDrawdown;
+
+                if (trade.mistakesMade && Array.isArray(trade.mistakesMade)) {
+                    trade.mistakesMade.forEach(m => { if (trackingPsychology.hasOwnProperty(m)) trackingPsychology[m]++; });
+                }
+
+                symbolPnlMetrics[trade.symbol] = (symbolPnlMetrics[trade.symbol] || 0) + tradePl;
+
+                if(trade.date) {
+                    const dateObj = new Date(trade.date);
+                    const monthKey = dateObj.toLocaleString('default', { month: 'long', year: 'numeric' });
+                    monthlyDistributionData[monthKey] = (monthlyDistributionData[monthKey] || 0) + tradePl;
+                    const weekdayKey = dateObj.toLocaleString('default', { weekday: 'long' });
+                    if (weekdayMetrics.hasOwnProperty(weekdayKey)) weekdayMetrics[weekdayKey] += tradePl;
+                }
+
+                const strat = trade.strategyTag || 'Unassigned';
+                if(!strategyMetrics[strat]) strategyMetrics[strat] = { pnl: 0, count: 0, wins: 0 };
+                strategyMetrics[strat].pnl += tradePl; strategyMetrics[strat].count++;
+                if(tradePl >= 0) strategyMetrics[strat].wins++;
+            });
+
+            document.getElementById('totalPl').textContent = `₹${totalPl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('totalPl').className = `text-2xl font-black font-mono mt-2 ${totalPl >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`;
+
+            let winRatePercent = (wins + losses) > 0 ? ((wins / (wins + losses)) * 100) : 0;
+            document.getElementById('winRate').textContent = `${winRatePercent.toFixed(1)}%`;
+            document.getElementById('winRateBar').style.width = `${winRatePercent}%`;
+            
+            if(document.getElementById('centerWinRateDisplay')) document.getElementById('centerWinRateDisplay').textContent = `${winRatePercent.toFixed(1)}%`;
+            if(document.getElementById('winningTradesText')) document.getElementById('winningTradesText').textContent = wins;
+            if(document.getElementById('losingTradesText')) document.getElementById('losingTradesText').textContent = losses;
+
+            document.getElementById('allocatedCapital').textContent = (wins + losses);
+
+            let totalRiskUnits = losses > 0 ? (grossLossesValue / losses) : 0;
+            let totalRewardUnits = wins > 0 ? (grossWinsValue / wins) : 0;
+            let globalRrRatioString = totalRiskUnits > 0 ? `1:${(totalRewardUnits / totalRiskUnits).toFixed(2)}` : `1:0.00`;
+            document.getElementById('profitFactorGlobal').textContent = globalRrRatioString;
+
+            renderTransactionLogsTable(filteredTrades);
+            renderDashboardTelemetryCharts(wins, losses, strategyMetrics, trackingPsychology, filteredTrades);
+            renderPnLReportTab(wins, losses, grossWinsValue, grossLossesValue, maxWinStreak, maxLossStreak, symbolPnlMetrics, monthlyDistributionData);
+            renderPortfolioManagementTab(symbolPnlMetrics);
+            renderAnalyticsAdvancedHub(filteredTrades, strategyMetrics, weekdayMetrics, maxWinSingle, maxLossSingle, maxSystemDrawdown, winRatePercent, wins, losses);
+            renderSentimentGauge(winRatePercent, totalPl);
+        }
+
+        // --- STREAMING_CHUNK: Formatting main charts UI styling setups... ---
+        function renderDashboardTelemetryCharts(wins, losses, strategyMetrics, trackingPsychology, filteredTrades) {
+            Chart.defaults.font.family = appConfig.theme.font + ', system-ui, sans-serif';
+            const colors = getChartColors();
+            const ctxWL = document.getElementById('winLossDistributionChart');
+            if (ctxWL) {
+                if (winLossDistributionChartInstance) winLossDistributionChartInstance.destroy();
+                winLossDistributionChartInstance = new Chart(ctxWL, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Wins', 'Losses'],
+                        datasets: [{ data: [wins, losses], backgroundColor: ['#34d399', '#f43f5e'], borderWidth: 0, hoverOffset: 4 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }
+                });
+            }
+            const ctxStrat = document.getElementById('strategyPnlDistributionChart');
+            if (ctxStrat) {
+                if (strategyPnlDistributionChartInstance) strategyPnlDistributionChartInstance.destroy();
+                const labels = Object.keys(strategyMetrics);
+                strategyPnlDistributionChartInstance = new Chart(ctxStrat, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{ label: 'Performance returns', data: labels.map(k => strategyMetrics[k].pnl), backgroundColor: colors.primary, borderRadius: 8, barThickness: 'flex' }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: colors.grid, display: false } }, y: { grid: { color: colors.grid } } }, plugins: { legend: { display: false } } }
+                });
+            }
+            const ctxEq = document.getElementById('equityChart');
+            if (ctxEq) {
+                if (equityChartInstance) equityChartInstance.destroy();
+                let runningSum = 0;
+                equityChartInstance = new Chart(ctxEq, {
+                    type: 'line',
+                    data: {
+                        labels: filteredTrades.map((_, i) => `T${i+1}`),
+                        datasets: [{ label: 'Equity Curve', data: filteredTrades.map(t => { runningSum += (t.calculatedPl || 0); return runningSum; }), borderColor: colors.primary, backgroundColor: 'rgba(79, 70, 229, 0.1)', tension: 0.4, fill: true, borderWidth: 3, pointRadius: 0, pointHitRadius: 10 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { grid: { color: colors.grid } } }, plugins: { legend: { display: false } } }
+                });
+            }
+            const ctxGro = document.getElementById('growthChart');
+            if (ctxGro) {
+                if (growthChartInstance) growthChartInstance.destroy();
+                let currentStreak = 0;
+                growthChartInstance = new Chart(ctxGro, {
+                    type: 'line',
+                    data: {
+                        labels: filteredTrades.map((_, i) => `T${i+1}`),
+                        datasets: [{ label: 'Streak Mapping', data: filteredTrades.map(t => { if((t.calculatedPl||0)>=0) currentStreak++; else currentStreak=0; return currentStreak; }), borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.1)', fill: true, tension: 0.3, borderWidth: 3, pointRadius: 0 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { grid: { color: colors.grid } } }, plugins: { legend: { display: false } } }
+                });
+            }
+            const ctxMis = document.getElementById('mistakeChart');
+            if (ctxMis) {
+                if (mistakeChartInstance) mistakeChartInstance.destroy();
+                mistakeChartInstance = new Chart(ctxMis, {
+                    type: 'radar',
+                    data: {
+                        labels: Object.keys(trackingPsychology),
+                        datasets: [{ label: 'Audit Risk Frequency', data: Object.values(trackingPsychology), backgroundColor: 'rgba(244, 63, 94, 0.2)', borderColor: '#f43f5e', pointBackgroundColor: '#f43f5e', borderWidth: 2 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { r: { angleLines: { color: colors.grid }, grid: { color: colors.grid }, pointLabels: { font: { family: appConfig.theme.font + ', sans-serif', size: 10 } } } }, plugins: { legend: { display: false } } }
+                });
+            }
+        }
+
+        // --- STREAMING_CHUNK: Structuring profit/loss breakdown layouts... ---
+        function renderPnLReportTab(wins, losses, grossWinsValue, grossLossesValue, maxWinStreak, maxLossStreak, symbolPnlMetrics, monthlyDistributionData) {
+            document.getElementById('grossWins').textContent = `₹${grossWinsValue.toFixed(2)}`;
+            document.getElementById('avgWin').textContent = `₹${wins > 0 ? (grossWinsValue / wins).toFixed(2) : '0.00'}`;
+            document.getElementById('maxWinStreak').textContent = maxWinStreak;
+            document.getElementById('grossLosses').textContent = `₹${grossLossesValue.toFixed(2)}`;
+            document.getElementById('avgLoss').textContent = `₹${losses > 0 ? (grossLossesValue / losses).toFixed(2) : '0.00'}`;
+            document.getElementById('maxLossStreak').textContent = maxLossStreak;
+            document.getElementById('reportTotalTrades').textContent = wins + losses;
+            document.getElementById('winLossRatio').textContent = losses > 0 ? (wins / losses).toFixed(2) : wins;
+            let totalTrades = wins + losses;
+            document.getElementById('expectancy').textContent = `₹${totalTrades > 0 ? ((grossWinsValue - grossLossesValue) / totalTrades).toFixed(2) : '0.00'}`;
+
+            const colors = getChartColors();
+            const ctxPnlBar = document.getElementById('pnlBarChart');
+            if (ctxPnlBar) {
+                if (pnlBarChartInstance) pnlBarChartInstance.destroy();
+                const labels = Object.keys(symbolPnlMetrics);
+                pnlBarChartInstance = new Chart(ctxPnlBar, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{ label: 'Net asset distribution', data: Object.values(symbolPnlMetrics), backgroundColor: Object.values(symbolPnlMetrics).map(v => v >= 0 ? '#10b981' : '#f43f5e'), borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false } }, y: { grid: { color: colors.grid } } }, plugins: { legend: { display: false } } }
+                });
+            }
+
+            const timeDistContainer = document.getElementById('timeDistributionContainer');
+            if (timeDistContainer) {
+                timeDistContainer.innerHTML = '';
+                Object.keys(monthlyDistributionData).forEach(m => {
+                    const val = monthlyDistributionData[m];
+                    const item = document.createElement('div');
+                    item.className = "flex justify-between items-center text-sm border-b border-slate-200/50 dark:border-slate-800/50 py-3 transition hover:px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/30";
+                    item.innerHTML = `<span class="font-bold text-slate-700 dark:text-slate-300">${m}</span><span class="${val >= 0 ? 'text-emerald-500' : 'text-rose-500'} font-black font-mono">₹${val.toFixed(2)}</span>`;
+                    timeDistContainer.appendChild(item);
+                });
+            }
+        }
+
+        function renderPortfolioManagementTab(symbolPnlMetrics) {
+            const portfolioBody = document.getElementById('portfolioTableBody');
+            if (!portfolioBody) return;
+            portfolioBody.innerHTML = '';
+            
+            const uniqueSymbols = Object.keys(symbolPnlMetrics);
+            if (uniqueSymbols.length === 0) {
+                portfolioBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-xs font-bold tracking-widest uppercase text-slate-500">No open asset models tracked.</td></tr>`;
+                if(allocationChartInstance) allocationChartInstance.destroy();
+                return;
+            }
+
+            let absoluteVolumeTotals = {};
+            let tradeCountTotals = {};
+            let globalVolumeSum = 0;
+
+            trades.forEach(t => {
+                absoluteVolumeTotals[t.symbol] = (absoluteVolumeTotals[t.symbol] || 0) + (parseFloat(t.quantity) || 0);
+                tradeCountTotals[t.symbol] = (tradeCountTotals[t.symbol] || 0) + 1;
+                globalVolumeSum += (parseFloat(t.quantity) || 0);
+            });
+
+            uniqueSymbols.forEach(sym => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-200/50 dark:border-slate-800/50 hover:bg-white/50 dark:hover:bg-slate-900/40 transition-colors text-xs font-semibold text-slate-700 dark:text-slate-300";
+                
+                const netPl = symbolPnlMetrics[sym];
+                const volume = absoluteVolumeTotals[sym] || 0;
+                const count = tradeCountTotals[sym] || 0;
+                const weight = globalVolumeSum > 0 ? ((volume / globalVolumeSum) * 100).toFixed(1) : "0.0";
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-bold text-slate-900 dark:text-white tracking-wide">${sym}</td>
+                    <td class="px-6 py-4 font-mono">${volume.toLocaleString()} units</td>
+                    <td class="px-6 py-4">${count} execution steps</td>
+                    <td class="px-6 py-4 font-mono ${netPl >= 0 ? 'text-emerald-500' : 'text-rose-500'} font-bold">₹${netPl.toFixed(2)}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-10 text-right font-mono">${weight}%</span>
+                            <div class="w-24 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-primary h-full" style="width: ${weight}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                `;
+                portfolioBody.appendChild(tr);
+            });
+
+            const ctxAlloc = document.getElementById('allocationChart');
+            if (ctxAlloc) {
+                if (allocationChartInstance) allocationChartInstance.destroy();
+                const dataValues = uniqueSymbols.map(sym => absoluteVolumeTotals[sym] || 0);
+                allocationChartInstance = new Chart(ctxAlloc, {
+                    type: 'doughnut',
+                    data: {
+                        labels: uniqueSymbols,
+                        datasets: [{
+                            data: dataValues,
+                            backgroundColor: [appConfig.theme.color, '#a855f7', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#14b8a6'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { boxWidth: 10, font: { size: 11 }, color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // --- STREAMING_CHUNK: Formatting historical log view table elements... ---
+        function renderTransactionLogsTable(filteredTrades) {
+            const tbody = document.getElementById('tradeTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            let searchableTrades = filteredTrades.map((t, idx) => ({ originalIndex: trades.indexOf(t), data: t }));
+
+            if (currentSearchFilter) {
+                searchableTrades = searchableTrades.filter(item => item.data.symbol.toLowerCase().includes(currentSearchFilter));
+            }
+
+            if (searchableTrades.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-xs font-bold tracking-widest uppercase text-slate-500">No corresponding logs match current asset filters.</td></tr>`;
+                return;
+            }
+
+            searchableTrades.reverse().forEach(item => {
+                const t = item.data;
+                const globalIdx = item.originalIndex;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-white/40 dark:hover:bg-slate-900/40 transition duration-200 text-slate-700 dark:text-slate-300 border-b border-slate-200/50 dark:border-slate-800/50 font-medium";
+                
+                const sign = t.currency === "USD" ? "$" : "₹";
+                const directionPill = t.direction === "SHORT" 
+                    ? `<span class="px-2.5 py-1 text-[10px] font-extrabold tracking-wider bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg border border-purple-200 dark:border-purple-500/20">SHORT</span>` 
+                    : `<span class="px-2.5 py-1 text-[10px] font-extrabold tracking-wider bg-primary/10 text-primary rounded-lg border border-primary/20">LONG</span>`;
+
+                const pnlValue = t.calculatedPl || 0;
+                const pnlClass = pnlValue >= 0 ? "text-emerald-500 dark:text-emerald-400 font-bold" : "text-rose-500 dark:text-rose-400 font-bold";
+                
+                let attachmentHTML = `<span class="text-slate-400 text-xs font-semibold">None</span>`;
+                if(t.chartImage) {
+                    attachmentHTML = `
+                        <button onclick="triggerImageOverlayModal('${t.chartImage}')" class="text-primary hover:text-primary-hover flex items-center gap-1 text-xs font-bold transition hover:underline">
+                            <i data-lucide="image" class="w-3.5 h-3.5"></i> Layout
+                        </button>
+                    `;
+                }
+
+                let metricsDisplay = `
+                    <div class="text-[11px] text-slate-400 font-mono">
+                        <div>Ent: ${sign}${t.entryPrice.toFixed(2)}</div>
+                        <div>Qty: ${t.quantity}</div>
+                    </div>
+                `;
+
+                let psychologyHTML = `
+                    <div class="text-[11px] space-y-0.5">
+                        <div class="text-slate-500 dark:text-slate-400 font-semibold"><span class="text-[10px] text-slate-400">Feel:</span> ${t.emotionalState || 'Calm'}</div>
+                        <div class="text-slate-400 truncate max-w-[140px]" title="${t.lessonsLearned}">${t.lessonsLearned || 'No comments'}</div>
+                    </div>
+                `;
+
+                const logTimeHTML = t.tradeTime ? `<span class="mx-1 font-extrabold">•</span>${t.tradeTime}` : '';
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="font-black text-slate-900 dark:text-white tracking-wide text-base">${t.symbol}</div>
+                        <div class="text-[10px] font-bold text-slate-400 mt-0.5">${t.date || 'N/A'}${logTimeHTML}</div>
+                    </td>
+                    <td class="px-6 py-4">${directionPill}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-xs font-bold text-slate-800 dark:text-slate-200">${t.strategyTag || 'Unassigned'}</div>
+                        <div class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5">${t.marketCondition || 'Indian'}</div>
+                    </td>
+                    <td class="px-6 py-4">${metricsDisplay}</td>
+                    <td class="px-6 py-4">${attachmentHTML}</td>
+                    <td class="px-6 py-4">${psychologyHTML}</td>
+                    <td class="px-6 py-4 font-mono ${pnlClass} text-sm">${pnlValue >= 0 ? '+' : ''}${sign}${pnlValue.toLocaleString('en-IN', {minimumFractionDigits:2})}</td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="editTrade(${globalIdx})" class="p-1.5 text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition" title="Modify parameters"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                            <button onclick="removeTrade(${globalIdx})" class="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition" title="Purge Record"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function triggerImageOverlayModal(base64Source) {
+            document.getElementById('modalPreviewImageSrc').src = base64Source;
+            toggleModal('imagePreviewModal');
+        }
+
+        // --- STREAMING_CHUNK: Processing advanced analytics equations models (Sharpe, Kelly)... ---
+        function renderAnalyticsAdvancedHub(filteredTrades, strategyMetrics, weekdayMetrics, maxWinSingle, maxLossSingle, maxSystemDrawdown, winRatePercent, wins, losses) {
+            document.getElementById('analyticsMaxWin').textContent = `₹${maxWinSingle.toFixed(2)}`;
+            document.getElementById('analyticsMaxLoss').textContent = `₹${maxLossSingle.toFixed(2)}`;
+            document.getElementById('analyticsDrawdown').textContent = `₹${maxSystemDrawdown.toFixed(2)}`;
+
+            let sizeSum = 0; let unitSum = 0;
+            filteredTrades.forEach(t => {
+                sizeSum += ((t.entryPrice || 0) * (t.quantity || 0));
+                unitSum += (t.quantity || 0);
+            });
+            document.getElementById('analyticsAvgSize').textContent = `₹${filteredTrades.length > 0 ? (sizeSum / filteredTrades.length).toFixed(2) : '0.00'}`;
+            document.getElementById('analyticsTotalVolume').textContent = `${unitSum.toFixed(2)} Units`;
+
+            let sharpeOutput = "0.00";
+            if (filteredTrades.length > 1) {
+                let pnlList = filteredTrades.map(t => t.calculatedPl || 0);
+                let avg = pnlList.reduce((a,b)=>a+b, 0) / pnlList.length;
+                let variance = pnlList.reduce((a,b)=> a + Math.pow(b - avg, 2), 0) / pnlList.length;
+                let standardDeviation = Math.sqrt(variance);
+                if(standardDeviation > 0) sharpeOutput = (avg / standardDeviation).toFixed(2);
+            }
+            document.getElementById('analyticsSharpe').textContent = sharpeOutput;
+
+            let kellyOutput = "0.00%";
+            let avgWinVal = wins > 0 ? (filteredTrades.filter(t=>t.calculatedPl>=0).reduce((a,b)=>a+(b.calculatedPl||0),0)/wins) : 0;
+            let avgLossVal = losses > 0 ? (filteredTrades.filter(t=>t.calculatedPl<0).reduce((a,b)=>a+Math.abs(b.calculatedPl||0),0)/losses) : 0;
+            if(avgLossVal > 0) {
+                let winRatioDec = winRatePercent / 100;
+                let profitRatio = avgWinVal / avgLossVal;
+                let kFactor = winRatioDec - ((1 - winRatioDec) / profitRatio);
+                if(kFactor > 0) kellyOutput = `${(kFactor * 100).toFixed(1)}%`;
+            }
+            document.getElementById('analyticsKelly').textContent = kellyOutput;
+
+            let globalRiskUnits = losses > 0 ? (filteredTrades.filter(t=>t.calculatedPl<0).reduce((a,b)=>a+Math.abs(b.calculatedPl||0),0) / losses) : 0;
+            let globalRewardUnits = wins > 0 ? (filteredTrades.filter(t=>t.calculatedPl>=0).reduce((a,b)=>a+(b.calculatedPl||0),0) / wins) : 0;
+            document.getElementById('analyticsRRR').textContent = globalRiskUnits > 0 ? `1:${(globalRewardUnits / globalRiskUnits).toFixed(2)}` : "1:0.00";
+
+            const colors = getChartColors();
+            const ctxHubBar = document.getElementById('analyticsStrategyChart');
+            if (ctxHubBar) {
+                if (analyticsStrategyChartInstance) analyticsStrategyChartInstance.destroy();
+                const labels = Object.keys(strategyMetrics);
+                analyticsStrategyChartInstance = new Chart(ctxHubBar, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Net return distribution profiling',
+                                data: labels.map(k => strategyMetrics[k].pnl),
+                                backgroundColor: labels.map(k => strategyMetrics[k].pnl >= 0 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(244, 63, 94, 0.85)'),
+                                borderRadius: 8
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { x: { grid: { display: false } }, y: { grid: { color: colors.grid } } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            const weekdayContainer = document.getElementById('analyticsWeekdayContainer');
+            if (weekdayContainer) {
+                weekdayContainer.innerHTML = '';
+                Object.keys(weekdayMetrics).forEach(day => {
+                    const val = weekdayMetrics[day];
+                    const row = document.createElement('div');
+                    row.className = "flex justify-between items-center text-xs p-2 rounded-lg bg-white/40 dark:bg-slate-900/40 border border-slate-200/30 dark:border-slate-800/50";
+                    row.innerHTML = `<span class="text-slate-500 dark:text-slate-400 font-bold">${day}</span><span class="${val >= 0 ? 'text-emerald-500':'text-rose-500'} font-mono font-black">₹${val.toFixed(2)}</span>`;
+                    weekdayContainer.appendChild(row);
+                });
+            }
+
+            const strategyBreakdownContainer = document.getElementById('analyticsStrategyBreakdownContainer');
+            if (strategyBreakdownContainer) {
+                strategyBreakdownContainer.innerHTML = '';
+                Object.keys(strategyMetrics).forEach(strat => {
+                    const m = strategyMetrics[strat];
+                    const localWinRate = m.count > 0 ? ((m.wins / m.count) * 100).toFixed(0) : 0;
+                    const el = document.createElement('div');
+                    el.className = "p-3 space-y-1 bg-white/30 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/40 rounded-xl";
+                    el.innerHTML = `
+                        <div class="flex justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
+                            <span>${strat}</span>
+                            <span class="${m.pnl >=0 ? 'text-emerald-500':'text-rose-500'} font-mono">₹${m.pnl.toFixed(0)}</span>
+                        </div>
+                        <div class="flex justify-between text-[10px] font-semibold text-slate-400">
+                            <span>Runs: ${m.count}</span>
+                            <span>Win factor: ${localWinRate}%</span>
+                        </div>
+                    `;
+                    strategyBreakdownContainer.appendChild(el);
+                });
+            }
+        }
+
+        function renderSentimentGauge(winRatePercent, totalPl) {
+            const ctx = document.getElementById('sentimentGaugeChart');
+            if (!ctx) return;
+            
+            if (sentimentGaugeInstance) sentimentGaugeInstance.destroy();
+            
+            let labelElement = document.getElementById('sentimentLabel');
+            if (winRatePercent >= 60 && totalPl >= 0) {
+                labelElement.textContent = "STRONG BULLISH";
+                labelElement.className = "text-xs font-black text-emerald-400 tracking-widest uppercase animate-pulse";
+            } else if (winRatePercent >= 45 && totalPl >= 0) {
+                labelElement.textContent = "MODERATE BULLISH";
+                labelElement.className = "text-xs font-bold text-emerald-500/80 tracking-wide uppercase";
+            } else if (winRatePercent === 0 && totalPl === 0) {
+                labelElement.textContent = "NEUTRAL POSITION";
+                labelElement.className = "text-xs font-bold text-slate-400 tracking-wide uppercase";
+            } else {
+                labelElement.textContent = "BEARISH RISK DISCIPLINE";
+                labelElement.className = "text-xs font-black text-rose-500 tracking-wider uppercase";
+            }
+
+            sentimentGaugeInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sentiment Factor', 'Remaining Bounds'],
+                    datasets: [{
+                        data: [winRatePercent, 100 - winRatePercent],
+                        backgroundColor: [winRatePercent >= 45 ? '#10b981' : '#f43f5e', 'rgba(148, 163, 184, 0.1)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    circumference: 180,
+                    rotation: -90,
+                    cutout: '80%',
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
